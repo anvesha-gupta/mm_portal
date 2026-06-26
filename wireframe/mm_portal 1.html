@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MotiveMinds Hub — Intelligence Simplified</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ── MM BRAND TOKENS ── */
+  :root {
+    /* Dark theme — from motiveminds.com */
+    --bg:         #08080F;
+    --bg-2:       #0F0F1A;
+    --bg-3:       #141422;
+    --surface:    #1A1A2E;
+    --card:       #12121F;
+    --card-hover: #181830;
+    --border:     rgba(255,255,255,.08);
+    --border-md:  rgba(255,255,255,.13);
+
+    --ink:        #FFFFFF;
+    --ink-soft:   rgba(255,255,255,.75);
+    --ink-muted:  rgba(255,255,255,.42);
+    --ink-dim:    rgba(255,255,255,.22);
+
+    /* MM purple gradient brand */
+    --brand:      #7C3AED;
+    --brand-2:    #A855F7;
+    --brand-3:    #C084FC;
+    --brand-grad: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);
+    --brand-lt:   rgba(124,58,237,.18);
+    --brand-glow: rgba(124,58,237,.35);
+
+    /* Accents */
+    --accent:     #10B981;   /* emerald green */
+    --accent-lt:  rgba(16,185,129,.15);
+    --warn:       #F59E0B;
+    --warn-lt:    rgba(245,158,11,.15);
+    --danger:     #EF4444;
+    --info:       #38BDF8;
+
+    --sidebar-w:  230px;
+    --header-h:   64px;
+
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 18px;
+    --r-xl: 24px;
+
+    --shadow-brand: 0 0 40px rgba(124,58,237,.25);
+    --shadow-card:  0 4px 24px rgba(0,0,0,.5);
+    --shadow-lg:    0 12px 48px rgba(0,0,0,.7);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { cursor: pointer; font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 99px; }
+
+  /* ── MM LOGO SVG ── */
+  .mm-logo-mark {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mm-icon {
+    width: 34px; height: 34px; flex-shrink: 0;
+    /* SVG brain/mind mark approximation using CSS */
+    background: var(--brand-grad);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; color: #fff;
+    box-shadow: 0 0 16px rgba(124,58,237,.5);
+    position: relative;
+  }
+  .mm-wordmark { display: flex; flex-direction: column; line-height: 1; }
+  .mm-wordmark-top { font-size: .92rem; font-weight: 800; color: #fff; letter-spacing: -.3px; }
+  .mm-wordmark-bot { font-size: .62rem; font-weight: 500; color: var(--brand-3); letter-spacing: .04em; text-transform: uppercase; }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+    transition: opacity .5s, transform .5s;
+    overflow: hidden;
+  }
+  /* background gradient orbs */
+  #login-screen::before {
+    content: '';
+    position: absolute; top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,58,237,.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  #login-screen::after {
+    content: '';
+    position: absolute; bottom: -150px; right: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(168,85,247,.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  #login-screen.hide { opacity: 0; pointer-events: none; transform: scale(1.04); }
+
+  .login-card {
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: var(--r-xl);
+    padding: 44px 42px;
+    width: 430px;
+    text-align: center;
+    box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(124,58,237,.15);
+    position: relative;
+    z-index: 1;
+  }
+  .login-logo-row {
+    display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px;
+  }
+  .login-icon {
+    width: 48px; height: 48px; background: var(--brand-grad); border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 24px rgba(124,58,237,.5);
+    font-size: 22px;
+  }
+  .login-wordmark { text-align: left; }
+  .login-wordmark-main { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -.5px; }
+  .login-wordmark-main span { 
+    background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+  }
+  .login-wordmark-sub { font-size: .68rem; color: var(--brand-3); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+  .login-tagline { font-size: .82rem; color: var(--ink-muted); margin-bottom: 32px; margin-top: 4px; font-style: italic; }
+
+  .login-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .login-divider span { font-size: .72rem; color: var(--ink-dim); }
+
+  .ms-btn {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; padding: 14px 20px; border-radius: var(--r-md);
+    background: rgba(255,255,255,.92); color: #1a1a2e;
+    font-size: .9rem; font-weight: 700; border: none;
+    transition: all .2s; letter-spacing: -.1px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+  .ms-btn:hover { background: #fff; box-shadow: 0 0 0 2px var(--brand), 0 4px 24px rgba(124,58,237,.3); transform: translateY(-1px); }
+
+  .login-roles-label { font-size: .73rem; color: var(--ink-muted); margin-bottom: 10px; margin-top: 22px; }
+  .login-roles { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .role-pill {
+    padding: 7px 16px; border-radius: 99px; font-size: .78rem; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--border-md); color: var(--ink-muted); background: transparent;
+    transition: all .2s;
+  }
+  .role-pill.active { background: var(--brand-grad); color: #fff; border-color: transparent; box-shadow: 0 0 12px var(--brand-glow); }
+  .role-pill:hover:not(.active) { border-color: var(--brand-2); color: var(--brand-3); }
+  .login-sso-note { color: var(--ink-dim); font-size: .72rem; margin-top: 20px; }
+  .login-soc { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; font-size: .7rem; color: var(--ink-dim); }
+  .soc-dot { width: 6px; height: 6px; border-radius: 99px; background: var(--accent); }
+
+  /* ── APP SHELL ── */
+  #app { display: none; }
+  #app.show { display: flex; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+  }
+  .sidebar-brand {
+    height: var(--header-h);
+    display: flex; align-items: center;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 11px;
+  }
+  .sidebar-section { padding: 18px 10px 4px; }
+  .sidebar-label {
+    font-size: .65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-dim);
+    padding: 0 10px; margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; border-radius: var(--r-sm);
+    font-size: .85rem; font-weight: 500; color: var(--ink-muted);
+    cursor: pointer; transition: all .15s;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.05); color: var(--ink); }
+  .nav-item.active {
+    background: var(--brand-lt);
+    color: var(--brand-3);
+    font-weight: 600;
+  }
+  .nav-icon { width: 17px; height: 17px; flex-shrink: 0; opacity: .7; }
+  .nav-item.active .nav-icon { opacity: 1; }
+  .nav-badge {
+    margin-left: auto; font-size: .63rem; font-weight: 700;
+    padding: 2px 7px; border-radius: 99px; background: var(--brand-grad); color: #fff;
+  }
+  .nav-badge.green { background: var(--accent); }
+  .nav-badge.amber { background: var(--warn); color: #000; }
+  .nav-placeholder { opacity: .4; }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 14px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .user-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: var(--r-sm);
+    background: rgba(255,255,255,.04);
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 99px;
+    background: var(--brand-grad);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .8rem; flex-shrink: 0;
+    box-shadow: 0 0 10px var(--brand-glow);
+  }
+  .user-name { font-size: .82rem; font-weight: 600; }
+  .user-role { font-size: .7rem; color: var(--ink-muted); }
+
+  /* ── TOPBAR ── */
+  #topbar {
+    position: fixed; top: 0; left: var(--sidebar-w); right: 0;
+    height: var(--header-h);
+    background: rgba(8,8,15,.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 14px; z-index: 100;
+  }
+  .topbar-title { font-size: .95rem; font-weight: 700; flex: 1; }
+  .topbar-tag { font-size: .72rem; color: var(--ink-dim); font-weight: 400; margin-left: 6px; font-style: italic; }
+
+  .pts-chip {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--warn-lt);
+    border: 1px solid rgba(245,158,11,.25);
+    border-radius: 99px; padding: 6px 14px;
+    font-size: .8rem; font-weight: 700; color: var(--warn);
+  }
+
+  .notif-btn {
+    width: 36px; height: 36px; border-radius: var(--r-sm);
+    border: 1px solid var(--border-md);
+    background: rgba(255,255,255,.04);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; color: var(--ink-muted); transition: all .15s;
+  }
+  .notif-btn:hover { background: rgba(255,255,255,.08); color: var(--ink); }
+  .notif-dot {
+    position: absolute; top: 7px; right: 7px; width: 7px; height: 7px;
+    border-radius: 99px; background: var(--danger); border: 2px solid var(--bg);
+  }
+
+  /* ── MAIN ── */
+  #main { margin-left: var(--sidebar-w); padding-top: var(--header-h); min-height: 100vh; }
+  .page { display: none; padding: 28px; }
+  .page.active { display: block; }
+
+  /* ── PAGE HEADER ── */
+  .page-hero {
+    margin-bottom: 28px;
+  }
+  .page-hero h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -.4px; }
+  .page-hero h1 em { font-style: italic; background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .page-hero p { font-size: .83rem; color: var(--ink-muted); margin-top: 4px; }
+
+  /* ── STAT CARDS ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 20px; box-shadow: var(--shadow-card);
+    transition: border-color .2s;
+  }
+  .stat-card:hover { border-color: var(--border-md); }
+  .stat-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-dim); margin-bottom: 10px; }
+  .stat-val { font-size: 1.75rem; font-weight: 900; letter-spacing: -1.5px; }
+  .stat-val.purple { background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-delta { font-size: .74rem; margin-top: 5px; color: var(--ink-dim); }
+  .stat-delta.up { color: var(--accent); }
+  .stat-delta.warn { color: var(--warn); }
+
+  /* ── APP GRID ── */
+  .section-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); margin-bottom: 14px; }
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(162px, 1fr)); gap: 12px; }
+  .app-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 22px 16px;
+    text-align: center; cursor: pointer;
+    transition: all .2s; box-shadow: var(--shadow-card);
+    position: relative; overflow: hidden;
+  }
+  .app-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--brand-grad); opacity: 0; transition: opacity .2s;
+  }
+  .app-card:hover { background: var(--card-hover); border-color: rgba(124,58,237,.4); box-shadow: 0 0 24px rgba(124,58,237,.12); transform: translateY(-2px); }
+  .app-card:hover::before { opacity: 1; }
+  .app-icon {
+    width: 50px; height: 50px; border-radius: 14px;
+    margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  .app-name { font-size: .85rem; font-weight: 700; margin-bottom: 3px; }
+  .app-type { font-size: .7rem; color: var(--ink-dim); }
+  .app-ext-tag {
+    position: absolute; top: 9px; right: 9px; font-size: .6rem; font-weight: 700;
+    background: rgba(56,189,248,.12); color: var(--info);
+    border: 1px solid rgba(56,189,248,.2); border-radius: 4px; padding: 2px 5px;
+  }
+  .app-locked { opacity: .35; pointer-events: none; filter: grayscale(1); }
+  .app-locked::after { content: '🔒'; position: absolute; top: 9px; left: 9px; font-size: 11px; }
+
+  /* ── AI PLAYBENCH ── */
+  .playbench-wrap { display: grid; grid-template-columns: 1fr 270px; gap: 18px; height: calc(100vh - var(--header-h) - 56px); }
+  .chat-shell {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r-lg); display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .chat-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.02);
+  }
+  .model-sel {
+    background: var(--bg-3); border: 1px solid var(--border-md);
+    border-radius: var(--r-sm); padding: 7px 12px;
+    font-size: .82rem; font-weight: 600; color: var(--brand-3);
+    max-width: 240px; outline: none; cursor: pointer;
+  }
+  .chat-badge {
+    font-size: .68rem; padding: 3px 9px;
+    background: var(--brand-lt); color: var(--brand-3);
+    border: 1px solid rgba(124,58,237,.3);
+    border-radius: 99px; font-weight: 700;
+  }
+
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 80%; }
+  .msg.user { align-self: flex-end; }
+  .msg.assistant { align-self: flex-start; }
+  .msg-bubble {
+    padding: 12px 16px; border-radius: var(--r-md); font-size: .875rem; line-height: 1.6;
+  }
+  .msg.user .msg-bubble {
+    background: var(--brand-grad); color: #fff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 16px rgba(124,58,237,.3);
+  }
+  .msg.assistant .msg-bubble {
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-bottom-left-radius: 4px; color: var(--ink-soft);
+  }
+  .msg-meta { font-size: .68rem; color: var(--ink-dim); margin-top: 4px; }
+  .msg.user .msg-meta { text-align: right; }
+
+  .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 99px; background: var(--brand-3); margin: 0 2px; animation: blink 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: .2s; }
+  .typing-dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+  .chat-input-row {
+    padding: 14px 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; background: rgba(255,255,255,.02);
+  }
+  .chat-input {
+    flex: 1; background: var(--bg-3); border: 1.5px solid var(--border);
+    border-radius: var(--r-sm); padding: 11px 14px;
+    font-size: .875rem; resize: none; outline: none; color: var(--ink);
+    transition: border-color .2s; line-height: 1.45;
+  }
+  .chat-input::placeholder { color: var(--ink-dim); }
+  .chat-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(124,58,237,.15); }
+  .send-btn {
+    background: var(--brand-grad); color: #fff; border: none;
+    border-radius: var(--r-sm); width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; box-shadow: 0 0 12px var(--brand-glow);
+  }
+  .send-btn:hover { opacity: .88; }
+
+  .ai-sidebar-panel { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .ai-panel-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 16px; box-shadow: var(--shadow-card);
+  }
+  .ai-panel-title {
+    font-size: .7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--ink-dim); margin-bottom: 12px;
+  }
+  .usage-bar-bg { background: var(--bg-3); border-radius: 99px; height: 7px; overflow: hidden; margin-bottom: 7px; }
+  .usage-bar-fill { height: 100%; border-radius: 99px; background: var(--brand-grad); transition: width .5s; }
+  .usage-label { display: flex; justify-content: space-between; font-size: .7rem; color: var(--ink-dim); }
+
+  /* ── SWAG STORE ── */
+  .store-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+  .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-tab {
+    padding: 7px 15px; border-radius: 99px; font-size: .78rem; font-weight: 600;
+    border: 1.5px solid var(--border-md); background: transparent; color: var(--ink-muted); cursor: pointer; transition: all .15s;
+  }
+  .filter-tab.active, .filter-tab:hover { background: var(--brand-grad); color: #fff; border-color: transparent; box-shadow: 0 0 12px var(--brand-glow); }
+
+  .swag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .swag-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--r-md); overflow: hidden;
+    box-shadow: var(--shadow-card); transition: all .2s;
+  }
+  .swag-card:hover { border-color: rgba(124,58,237,.4); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.6); }
+  .swag-img {
+    width: 100%; height: 150px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 52px; background: var(--bg-3);
+    border-bottom: 1px solid var(--border);
+  }
+  .swag-body { padding: 14px; }
+  .swag-name { font-size: .88rem; font-weight: 700; margin-bottom: 3px; }
+  .swag-desc { font-size: .73rem; color: var(--ink-muted); margin-bottom: 12px; }
+  .swag-footer { display: flex; align-items: center; justify-content: space-between; }
+  .swag-pts { font-size: .88rem; font-weight: 800; color: var(--warn); }
+  .redeem-btn {
+    padding: 7px 14px; background: var(--brand-grad); color: #fff;
+    border: none; border-radius: var(--r-sm); font-size: .78rem; font-weight: 700;
+    cursor: pointer; transition: all .15s; box-shadow: 0 0 10px var(--brand-glow);
+  }
+  .redeem-btn:hover { opacity: .85; }
+  .redeem-btn:disabled { background: rgba(255,255,255,.08); color: var(--ink-dim); cursor: not-allowed; box-shadow: none; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7);
+    backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; z-index: 500;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-2); border: 1px solid var(--border-md);
+    border-radius: var(--r-xl); padding: 32px; width: 420px;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(124,58,237,.2);
+  }
+  .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 5px; }
+  .modal-sub { font-size: .82rem; color: var(--ink-muted); margin-bottom: 22px; }
+  .modal-row {
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: var(--r-sm); padding: 13px 16px;
+    display: flex; justify-content: space-between;
+    font-size: .85rem; margin-bottom: 8px; color: var(--ink-soft);
+  }
+  .modal-row b { font-weight: 700; color: var(--ink); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+  .btn-ghost {
+    padding: 10px 20px; border-radius: var(--r-sm);
+    border: 1.5px solid var(--border-md); background: none;
+    font-size: .875rem; font-weight: 600; color: var(--ink-muted); cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-ghost:hover { border-color: var(--border-md); color: var(--ink); background: rgba(255,255,255,.05); }
+  .btn-primary {
+    padding: 10px 22px; border-radius: var(--r-sm); border: none;
+    background: var(--brand-grad); color: #fff;
+    font-size: .875rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 0 14px var(--brand-glow); transition: opacity .15s;
+  }
+  .btn-primary:hover { opacity: .85; }
+
+  /* ── TOAST ── */
+  #toast-root { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast {
+    background: var(--bg-3); border: 1px solid var(--border-md);
+    color: var(--ink); border-radius: var(--r-md);
+    padding: 12px 18px; font-size: .83rem; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: var(--shadow-lg); animation: slide-in .3s ease; pointer-events: all;
+  }
+  .toast.success { border-color: rgba(16,185,129,.4); }
+  .toast.error { border-color: rgba(239,68,68,.4); }
+  .toast-dot { width: 8px; height: 8px; border-radius: 99px; flex-shrink: 0; background: var(--ink-dim); }
+  .toast.success .toast-dot { background: var(--accent); }
+  .toast.error .toast-dot { background: var(--danger); }
+  @keyframes slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── FRAME EMBED ── */
+  .frame-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+  .frame-topbar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg-3); border-bottom: 1px solid var(--border); }
+  .frame-dot { width: 11px; height: 11px; border-radius: 99px; }
+  .frame-title { font-size: .78rem; font-weight: 500; color: var(--ink-muted); flex: 1; }
+  .frame-body {
+    height: 420px; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; background: var(--bg);
+  }
+  .frame-inner-icon { font-size: 48px; }
+  .frame-inner-text { font-size: .88rem; color: var(--ink-soft); }
+  .frame-inner-text b { background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ── FUTURE PLACEHOLDERS ── */
+  .placeholder-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .placeholder-card {
+    background: var(--card); border: 1.5px dashed var(--border);
+    border-radius: var(--r-lg); padding: 36px 28px;
+    text-align: center; position: relative; overflow: hidden; transition: all .2s;
+  }
+  .placeholder-card:hover { border-color: rgba(124,58,237,.3); background: var(--card-hover); }
+  .placeholder-chip {
+    position: absolute; top: 14px; right: 14px;
+    font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    background: var(--brand-lt); color: var(--brand-3);
+    border: 1px solid rgba(124,58,237,.25); padding: 3px 9px; border-radius: 99px;
+  }
+  .placeholder-icon { font-size: 44px; margin-bottom: 14px; }
+  .placeholder-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -.3px; }
+  .placeholder-desc { font-size: .8rem; color: var(--ink-muted); max-width: 280px; margin: 0 auto; line-height: 1.55; }
+
+  /* ── HR ADMIN ── */
+  .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .admin-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-md); padding: 24px; box-shadow: var(--shadow-card); }
+  .admin-card-title { font-size: .88rem; font-weight: 700; margin-bottom: 18px; }
+  .form-row { margin-bottom: 15px; }
+  .form-label { font-size: .75rem; font-weight: 600; color: var(--ink-muted); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%; background: var(--bg-3); border: 1.5px solid var(--border);
+    border-radius: var(--r-sm); padding: 10px 13px; font-size: .875rem;
+    color: var(--ink); outline: none; transition: border-color .2s;
+  }
+  .form-input:focus { border-color: var(--brand); }
+  .form-input option { background: var(--bg-3); }
+  .emp-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  .emp-table th { text-align: left; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-dim); padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .emp-table td { padding: 11px 12px; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--ink-soft); }
+  .emp-table tr:last-child td { border-bottom: none; }
+  .pts-val { font-weight: 800; color: var(--warn); }
+
+  /* ── GLOW PULSE for brand icon ── */
+  @keyframes glow-pulse { 0%,100%{box-shadow:0 0 16px rgba(124,58,237,.5)} 50%{box-shadow:0 0 28px rgba(168,85,247,.7)} }
+  .mm-icon { animation: glow-pulse 3s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo-row">
+      <div class="login-icon">
+        <!-- MM Brain/Mind SVG icon approximation -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 3C9.5 3 7 5.5 7 8.5C7 10 7.5 11.3 8.5 12.2C7.6 12.8 7 13.8 7 15C7 16.7 8.2 18.1 9.8 18.4C9.9 19.9 11.3 21 13 21C14.7 21 16.1 19.9 16.2 18.4C17.8 18.1 19 16.7 19 15C19 13.8 18.4 12.8 17.5 12.2C18.5 11.3 19 10 19 8.5C19 5.5 16.5 3 13 3Z" fill="white" opacity="0.9"/>
+          <circle cx="10.5" cy="9" r="1.5" fill="#7C3AED"/>
+          <circle cx="15.5" cy="9" r="1.5" fill="#7C3AED"/>
+          <path d="M10 14H16" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="login-wordmark">
+        <div class="login-wordmark-main">Motive<span>Minds</span></div>
+        <div class="login-wordmark-sub">Intelligence Simplified</div>
+      </div>
+    </div>
+    <div class="login-tagline">Employee Hub · Internal Portal</div>
+
+    <button class="ms-btn" onclick="doLogin()">
+      <svg width="20" height="20" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+        <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+        <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+        <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+      </svg>
+      Sign in with Microsoft
+    </button>
+
+    <div class="login-roles-label">Demo: Select your AD role</div>
+    <div class="login-roles">
+      <button class="role-pill active" onclick="setRole('Employee',this)">Employee</button>
+      <button class="role-pill" onclick="setRole('Finance',this)">Finance</button>
+      <button class="role-pill" onclick="setRole('HR Admin',this)">HR Admin</button>
+      <button class="role-pill" onclick="setRole('Engineering',this)">Engineering</button>
+    </div>
+
+    <div class="login-sso-note">Azure AD · SAML 2.0 / OAuth 2.0 · SOC 2 Type II</div>
+    <div class="login-soc"><span class="soc-dot"></span> Secure SSO · All access keys server-side only</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <div class="mm-logo-mark">
+        <div class="mm-icon">
+          <svg width="18" height="18" viewBox="0 0 26 26" fill="none">
+            <path d="M13 3C9.5 3 7 5.5 7 8.5C7 10 7.5 11.3 8.5 12.2C7.6 12.8 7 13.8 7 15C7 16.7 8.2 18.1 9.8 18.4C9.9 19.9 11.3 21 13 21C14.7 21 16.1 19.9 16.2 18.4C17.8 18.1 19 16.7 19 15C19 13.8 18.4 12.8 17.5 12.2C18.5 11.3 19 10 19 8.5C19 5.5 16.5 3 13 3Z" fill="white" opacity="0.9"/>
+            <circle cx="10.5" cy="9" r="1.5" fill="#A855F7"/>
+            <circle cx="15.5" cy="9" r="1.5" fill="#A855F7"/>
+            <path d="M10 14H16" stroke="#A855F7" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="mm-wordmark">
+          <div class="mm-wordmark-top">MotiveMinds</div>
+          <div class="mm-wordmark-bot">Hub</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Workspace</div>
+      <button class="nav-item active" onclick="nav('dashboard',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Launchpad
+      </button>
+      <button class="nav-item" onclick="nav('playbench',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        AI Playbench
+        <span class="nav-badge">New</span>
+      </button>
+      <button class="nav-item" onclick="nav('swag',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Swag Store
+        <span class="nav-badge amber" id="nav-pts-badge">750</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Internal Tools</div>
+      <button class="nav-item" onclick="nav('mindscript',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Mindscript
+      </button>
+      <button class="nav-item" onclick="nav('resolveiq',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Resolve IQ
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Roadmap</div>
+      <button class="nav-item nav-placeholder" onclick="nav('future',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Future Systems
+      </button>
+    </div>
+
+    <div id="hr-nav-section" class="sidebar-section" style="display:none;">
+      <div class="sidebar-label">Admin</div>
+      <button class="nav-item" onclick="nav('hradmin',this)">
+        <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        HR Points Admin
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar" id="user-avatar">JS</div>
+        <div>
+          <div class="user-name" id="user-name-display">Jane Smith</div>
+          <div class="user-role" id="user-role-display">Employee</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <span class="topbar-title" id="page-title">Launchpad <span class="topbar-tag">Intelligence Simplified</span></span>
+    <div class="pts-chip">
+      ⭐ <span id="points-display">750 pts</span>
+    </div>
+    <button class="notif-btn">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span class="notif-dot"></span>
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main id="main">
+
+    <!-- ── DASHBOARD ── -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-hero">
+        <h1>Good morning, <em id="greeting-name">Jane</em></h1>
+        <p>Your personalised hub — apps, AI tools, and rewards in one place.</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Points Balance</div>
+          <div class="stat-val" style="color:var(--warn)" id="stat-points">750</div>
+          <div class="stat-delta up">↑ 200 pts this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">AI Tokens Today</div>
+          <div class="stat-val purple" id="stat-tokens">3,200</div>
+          <div class="stat-delta warn">⚡ 6,800 remaining</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Apps Available</div>
+          <div class="stat-val purple" id="stat-apps">—</div>
+          <div class="stat-delta" style="color:var(--ink-dim)">based on your AD role</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Orders Pending</div>
+          <div class="stat-val">1</div>
+          <div class="stat-delta" style="color:var(--ink-dim)">Hoodie · in fulfillment</div>
+        </div>
+      </div>
+
+      <div class="section-label">Your Applications</div>
+      <div class="app-grid" id="app-grid"></div>
+    </section>
+
+    <!-- ── AI PLAYBENCH ── -->
+    <section class="page" id="page-playbench">
+      <div class="page-hero" style="margin-bottom:18px;">
+        <h1>AI <em>Playbench</em></h1>
+        <p>Corporate AI gateway — all keys are managed server-side, nothing exposed to your browser.</p>
+      </div>
+      <div class="playbench-wrap">
+        <div class="chat-shell">
+          <div class="chat-header">
+            <select class="model-sel" id="model-sel" onchange="updateModelBadge()">
+              <option value="gpt4o">GPT-4o</option>
+              <option value="claude">Claude 3.5 Sonnet</option>
+              <option value="llama">Llama 3 (70B)</option>
+            </select>
+            <span class="chat-badge" id="model-badge">OpenAI</span>
+            <span style="font-size:.72rem;color:var(--ink-dim);margin-left:auto;">🔒 Key brokered server-side</span>
+          </div>
+
+          <div class="chat-messages" id="chat-messages">
+            <div class="msg assistant">
+              <div class="msg-bubble">👋 Welcome to <strong>The Playbench</strong>! I'm your corporate AI assistant, connected through the MotiveMinds LLM Gateway.<br><br>Your API credentials are managed securely on our backend — your browser never sees a key. How can I help you today?</div>
+              <div class="msg-meta">Assistant · just now</div>
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="chat-input" rows="1" placeholder="Message the AI…" onkeydown="handleChatKey(event)"></textarea>
+            <button class="send-btn" onclick="sendMessage()">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="ai-sidebar-panel">
+          <div class="ai-panel-card">
+            <div class="ai-panel-title">Daily Token Usage</div>
+            <div class="usage-bar-bg"><div class="usage-bar-fill" id="usage-fill" style="width:32%"></div></div>
+            <div class="usage-label"><span id="usage-used">3,200 used</span><span>10,000 limit</span></div>
+            <div style="font-size:.72rem;color:var(--ink-dim);margin-top:8px;">Resets at midnight UTC</div>
+          </div>
+
+          <div class="ai-panel-card">
+            <div class="ai-panel-title">Available Models</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:.81rem;color:var(--ink-soft);">
+                <span style="width:7px;height:7px;border-radius:99px;background:var(--accent);flex-shrink:0;"></span>
+                GPT-4o
+                <span style="color:var(--ink-dim);font-size:.7rem;margin-left:auto;">All tiers</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:.81rem;color:var(--ink-soft);">
+                <span style="width:7px;height:7px;border-radius:99px;background:var(--accent);flex-shrink:0;"></span>
+                Claude 3.5 Sonnet
+                <span style="color:var(--ink-dim);font-size:.7rem;margin-left:auto;">T2+</span>
+              </div>
+              <div id="llama-row" style="display:flex;align-items:center;gap:8px;font-size:.81rem;color:var(--ink-dim);">
+                <span id="llama-dot" style="width:7px;height:7px;border-radius:99px;background:rgba(255,255,255,.15);flex-shrink:0;"></span>
+                Llama 3 70B
+                <span style="color:var(--ink-dim);font-size:.7rem;margin-left:auto;">Engineering</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-panel-card">
+            <div class="ai-panel-title">Security Posture</div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:.78rem;color:var(--ink-soft);">
+              <div>✅ API keys never sent to browser</div>
+              <div>✅ All requests via MM backend proxy</div>
+              <div>✅ Usage logs retained for compliance</div>
+              <div>✅ Per-user daily token enforcement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SWAG STORE ── -->
+    <section class="page" id="page-swag">
+      <div class="page-hero" style="margin-bottom:18px;">
+        <h1><em>Swag</em> Redemption Store</h1>
+        <p>Convert your recognition points into company merchandise.</p>
+      </div>
+      <div class="store-header-row">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterSwag('all',this)">All Items</button>
+          <button class="filter-tab" onclick="filterSwag('apparel',this)">Apparel</button>
+          <button class="filter-tab" onclick="filterSwag('accessories',this)">Accessories</button>
+          <button class="filter-tab" onclick="filterSwag('stationery',this)">Stationery</button>
+        </div>
+        <div style="font-size:.8rem;color:var(--ink-dim);">Balance: <span style="color:var(--warn);font-weight:700;" id="store-balance">750 pts</span></div>
+      </div>
+      <div class="swag-grid" id="swag-grid"></div>
+    </section>
+
+    <!-- ── MINDSCRIPT ── -->
+    <section class="page" id="page-mindscript">
+      <div class="page-hero"><h1><em>Mindscript</em></h1><p>Proprietary document intelligence platform — loaded via SSO pass-through.</p></div>
+      <div class="frame-card">
+        <div class="frame-topbar">
+          <span class="frame-dot" style="background:#ed6159"></span>
+          <span class="frame-dot" style="background:#f4bf50"></span>
+          <span class="frame-dot" style="background:#61c454"></span>
+          <span class="frame-title">mindscript.motiveminds.internal</span>
+          <span style="font-size:.7rem;padding:3px 9px;background:var(--brand-lt);color:var(--brand-3);border:1px solid rgba(124,58,237,.25);border-radius:99px;font-weight:700;">SSO Active</span>
+        </div>
+        <div class="frame-body">
+          <div class="frame-inner-icon">📝</div>
+          <div class="frame-inner-text"><b>Mindscript</b> is embedded here via secure Azure AD SSO pass-through</div>
+          <div style="font-size:.75rem;color:var(--ink-dim);">The application authenticates automatically using your session token</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── RESOLVE IQ ── -->
+    <section class="page" id="page-resolveiq">
+      <div class="page-hero"><h1><em>Resolve IQ</em></h1><p>Intelligent issue tracking and resolution platform.</p></div>
+      <div class="frame-card">
+        <div class="frame-topbar">
+          <span class="frame-dot" style="background:#ed6159"></span>
+          <span class="frame-dot" style="background:#f4bf50"></span>
+          <span class="frame-dot" style="background:#61c454"></span>
+          <span class="frame-title">resolveiq.motiveminds.internal</span>
+          <span style="font-size:.7rem;padding:3px 9px;background:var(--brand-lt);color:var(--brand-3);border:1px solid rgba(124,58,237,.25);border-radius:99px;font-weight:700;">SSO Active</span>
+        </div>
+        <div class="frame-body">
+          <div class="frame-inner-icon">⚙️</div>
+          <div class="frame-inner-text"><b>Resolve IQ</b> is embedded here via secure Azure AD SSO pass-through</div>
+          <div style="font-size:.75rem;color:var(--ink-dim);">Issue lifecycle management with AI-powered resolution suggestions</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FUTURE SYSTEMS ── -->
+    <section class="page" id="page-future">
+      <div class="page-hero">
+        <h1>Future <em>Systems</em></h1>
+        <p>Roadmap placeholders — earmarked for upcoming internal platforms.</p>
+      </div>
+      <div class="placeholder-grid">
+        <div class="placeholder-card">
+          <span class="placeholder-chip">Q3 2025</span>
+          <div class="placeholder-icon">💸</div>
+          <div class="placeholder-name">Expense Management</div>
+          <div class="placeholder-desc">Automated expense filing, approval workflows, and reimbursement tracking integrated with SAP.</div>
+        </div>
+        <div class="placeholder-card">
+          <span class="placeholder-chip">Q4 2025</span>
+          <div class="placeholder-icon">📚</div>
+          <div class="placeholder-name">Knowledge Management</div>
+          <div class="placeholder-desc">Internal wiki, SOPs, and AI-powered intelligent document search across all teams.</div>
+        </div>
+        <div class="placeholder-card">
+          <span class="placeholder-chip">Q1 2026</span>
+          <div class="placeholder-icon">💡</div>
+          <div class="placeholder-name">Idea Tracking Matrix</div>
+          <div class="placeholder-desc">Employee innovation submissions, upvoting, and lifecycle tracking from idea to execution.</div>
+        </div>
+        <div class="placeholder-card">
+          <span class="placeholder-chip">TBD</span>
+          <div class="placeholder-icon">➕</div>
+          <div class="placeholder-name">Reserved Slot</div>
+          <div class="placeholder-desc">This canvas block is earmarked for a future internal initiative. Stay tuned.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── HR ADMIN ── -->
+    <section class="page" id="page-hradmin">
+      <div class="page-hero">
+        <h1>HR <em>Points Admin</em></h1>
+        <p>Restricted to HR/Management AD groups. Deposit recognition points to employee profiles.</p>
+      </div>
+      <div class="admin-grid">
+        <div class="admin-card">
+          <div class="admin-card-title">Deposit Recognition Points</div>
+          <div class="form-row">
+            <label class="form-label">Employee</label>
+            <select class="form-input" id="deposit-emp">
+              <option>Jane Smith (Employee)</option>
+              <option>David Chen (Engineering)</option>
+              <option>Priya Nair (Finance)</option>
+              <option>Marcus Lee (HR Admin)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Points to Deposit</label>
+            <input class="form-input" type="number" placeholder="e.g. 200" min="1" id="deposit-amount">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Milestone / Reason</label>
+            <input class="form-input" type="text" placeholder="e.g. Q2 Excellence Award" id="deposit-reason">
+          </div>
+          <button class="btn-primary" style="width:100%;" onclick="depositPoints()">Deposit Points → HR Alert</button>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-title">Employee Ledger</div>
+          <table class="emp-table">
+            <thead>
+              <tr><th>Employee</th><th>Role</th><th>Balance</th></tr>
+            </thead>
+            <tbody id="emp-table-body">
+              <tr><td>Jane Smith</td><td>Employee</td><td class="pts-val" id="emp-jane">750 pts</td></tr>
+              <tr><td>David Chen</td><td>Engineering</td><td class="pts-val">1,200 pts</td></tr>
+              <tr><td>Priya Nair</td><td>Finance</td><td class="pts-val">340 pts</td></tr>
+              <tr><td>Marcus Lee</td><td>HR Admin</td><td class="pts-val">890 pts</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Confirm Redemption</div>
+    <div class="modal-sub" id="modal-sub">Review before confirming.</div>
+    <div class="modal-row"><span>Item cost</span><b id="modal-cost">—</b></div>
+    <div class="modal-row"><span>Your balance</span><b id="modal-balance">750 pts</b></div>
+    <div class="modal-row"><span>Balance after order</span><b id="modal-after" style="color:var(--accent)">—</b></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="confirmRedeem()">Confirm Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-root"></div>
+
+<script>
+/* ── STATE ── */
+let currentRole = 'Employee';
+let userPoints = 750;
+let pendingItem = null;
+let tokensUsed = 3200;
+const TOKEN_LIMIT = 10000;
+
+const roleInfo = {
+  'Employee':    { name: 'Jane Smith',  first: 'Jane',   initials: 'JS' },
+  'Finance':     { name: 'Priya Nair',  first: 'Priya',  initials: 'PN' },
+  'HR Admin':    { name: 'Marcus Lee',  first: 'Marcus', initials: 'ML' },
+  'Engineering': { name: 'David Chen',  first: 'David',  initials: 'DC' },
+};
+
+const allApps = [
+  { id:'wyngs',      name:'Wyngs',       icon:'🛫', bg:'rgba(124,58,237,.18)',  type:'Internal', ext:false, roles:['Employee','Finance','HR Admin','Engineering'] },
+  { id:'estimatrix', name:'Estimatrix',  icon:'📊', bg:'rgba(16,185,129,.18)', type:'Internal', ext:false, roles:['Employee','Finance','HR Admin','Engineering'] },
+  { id:'myra',       name:'MyRA',        icon:'🤖', bg:'rgba(168,85,247,.18)', type:'Internal', ext:false, roles:['Employee','Finance','HR Admin','Engineering'] },
+  { id:'keka',       name:'Keka',        icon:'🏢', bg:'rgba(56,189,248,.15)', type:'SaaS',     ext:true,  roles:['Employee','Finance','HR Admin','Engineering'] },
+  { id:'salesforce', name:'Salesforce',  icon:'☁️', bg:'rgba(56,189,248,.15)', type:'SaaS',     ext:true,  roles:['Employee','Finance','HR Admin','Engineering'] },
+  { id:'zohobooks',  name:'Zoho Books',  icon:'📒', bg:'rgba(16,185,129,.18)', type:'SaaS',     ext:true,  roles:['Finance','HR Admin'] },
+  { id:'adminpanel', name:'Admin Panel', icon:'🛡️', bg:'rgba(239,68,68,.15)',  type:'Internal', ext:false, roles:['HR Admin'] },
+  { id:'gitlab',     name:'GitLab',      icon:'🦊', bg:'rgba(245,158,11,.18)', type:'SaaS',     ext:true,  roles:['Engineering','HR Admin'] },
+  { id:'datadog',    name:'Datadog',     icon:'🐶', bg:'rgba(124,58,237,.18)', type:'SaaS',     ext:true,  roles:['Engineering','HR Admin'] },
+];
+
+const swagItems = [
+  { id:1, name:'MM Classic Tee',   emoji:'👕', cat:'apparel',     pts:150, desc:'Premium cotton, unisex, embroidered logo' },
+  { id:2, name:'Company Hoodie',   emoji:'🧥', cat:'apparel',     pts:400, desc:'Fleece hoodie, embroidered MM branding' },
+  { id:3, name:'Ceramic Mug',      emoji:'☕', cat:'accessories', pts:100, desc:'350ml, microwave safe, glossy finish' },
+  { id:4, name:'Laptop Sleeve',    emoji:'💻', cat:'accessories', pts:250, desc:'Neoprene, fits 15" laptops, MM logo' },
+  { id:5, name:'Branded Notebook', emoji:'📔', cat:'stationery',  pts:80,  desc:'A5, 200 pages, dot grid, hardcover' },
+  { id:6, name:'Enamel Pin Set',   emoji:'📌', cat:'accessories', pts:60,  desc:'Set of 3 collectible MM enamel pins' },
+  { id:7, name:'Snapback Cap',     emoji:'🧢', cat:'apparel',     pts:120, desc:'Structured snapback, embroidered' },
+  { id:8, name:'Sticker Pack',     emoji:'🎨', cat:'stationery',  pts:30,  desc:'12 high-quality vinyl stickers' },
+];
+
+/* ── LOGIN ── */
+function setRole(role, el) {
+  currentRole = role;
+  document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function doLogin() {
+  const info = roleInfo[currentRole];
+  document.getElementById('user-name-display').textContent = info.name;
+  document.getElementById('user-role-display').textContent = currentRole;
+  document.getElementById('user-avatar').textContent = info.initials;
+  document.getElementById('greeting-name').textContent = info.first;
+  document.getElementById('login-screen').classList.add('hide');
+  setTimeout(() => document.getElementById('login-screen').style.display = 'none', 500);
+  document.getElementById('app').classList.add('show');
+
+  if (currentRole === 'HR Admin') document.getElementById('hr-nav-section').style.display = '';
+  if (currentRole === 'Engineering') document.getElementById('llama-dot').style.background = 'var(--accent)';
+
+  buildAppGrid();
+  buildSwagGrid('all');
+}
+
+/* ── NAV ── */
+function nav(pageId, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  const titles = {
+    dashboard:'Launchpad', playbench:'AI Playbench', swag:'Swag Store',
+    mindscript:'Mindscript', resolveiq:'Resolve IQ', future:'Future Systems', hradmin:'HR Points Admin'
+  };
+  document.getElementById('page-title').innerHTML = titles[pageId] + ' <span class="topbar-tag">Intelligence Simplified</span>';
+}
+
+/* ── APP GRID ── */
+function buildAppGrid() {
+  const grid = document.getElementById('app-grid');
+  const visible = allApps.filter(a => a.roles.includes(currentRole));
+  const hidden  = allApps.filter(a => !a.roles.includes(currentRole));
+  document.getElementById('stat-apps').textContent = visible.length;
+  grid.innerHTML = '';
+  [...visible, ...hidden].forEach(app => {
+    const locked = !app.roles.includes(currentRole);
+    const card = document.createElement('div');
+    card.className = 'app-card' + (locked ? ' app-locked' : '');
+    card.innerHTML = `
+      ${app.ext ? '<span class="app-ext-tag">↗ SaaS</span>' : ''}
+      <div class="app-icon" style="background:${app.bg}">${app.icon}</div>
+      <div class="app-name">${app.name}</div>
+      <div class="app-type">${app.type}</div>
+    `;
+    if (!locked) card.onclick = () => appClick(app);
+    grid.appendChild(card);
+  });
+}
+
+function appClick(app) {
+  if (app.ext) {
+    toast(`Opening ${app.name} in new tab — logging you in via SSO…`, 'success');
+    setTimeout(() => window.open('about:blank','_blank'), 500);
+  } else {
+    toast(`Launching ${app.name} via SSO pass-through…`, 'success');
+  }
+}
+
+/* ── SWAG ── */
+function buildSwagGrid(cat) {
+  const grid = document.getElementById('swag-grid');
+  const items = cat === 'all' ? swagItems : swagItems.filter(s => s.cat === cat);
+  grid.innerHTML = '';
+  items.forEach(item => {
+    const ok = userPoints >= item.pts;
+    const card = document.createElement('div');
+    card.className = 'swag-card';
+    card.innerHTML = `
+      <div class="swag-img">${item.emoji}</div>
+      <div class="swag-body">
+        <div class="swag-name">${item.name}</div>
+        <div class="swag-desc">${item.desc}</div>
+        <div class="swag-footer">
+          <span class="swag-pts">⭐ ${item.pts}</span>
+          <button class="redeem-btn" ${ok?'':'disabled'} onclick="openModal(${item.id})">${ok?'Redeem':'Need more pts'}</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  document.getElementById('store-balance').textContent = userPoints + ' pts';
+}
+
+function filterSwag(cat, el) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  buildSwagGrid(cat);
+}
+
+/* ── MODAL ── */
+function openModal(id) {
+  pendingItem = swagItems.find(s => s.id === id);
+  document.getElementById('modal-title').textContent = 'Redeem: ' + pendingItem.name;
+  document.getElementById('modal-sub').textContent = pendingItem.emoji + '  ' + pendingItem.desc;
+  document.getElementById('modal-cost').textContent = pendingItem.pts + ' pts';
+  document.getElementById('modal-balance').textContent = userPoints + ' pts';
+  const after = userPoints - pendingItem.pts;
+  document.getElementById('modal-after').textContent = after + ' pts';
+  document.getElementById('modal-after').style.color = after >= 0 ? 'var(--accent)' : 'var(--danger)';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function confirmRedeem() {
+  if (!pendingItem) return;
+  if (userPoints < pendingItem.pts) { toast('Insufficient points balance.', 'error'); closeModal(); return; }
+  userPoints -= pendingItem.pts;
+  updatePointsUI();
+  toast('🎉 Order placed for ' + pendingItem.name + '! HR fulfillment alert sent.', 'success');
+  closeModal();
+  buildSwagGrid('all');
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.filter-tab').classList.add('active');
+}
+
+function updatePointsUI() {
+  document.getElementById('points-display').textContent = userPoints + ' pts';
+  document.getElementById('nav-pts-badge').textContent = userPoints;
+  document.getElementById('stat-points').textContent = userPoints;
+  if (document.getElementById('store-balance')) document.getElementById('store-balance').textContent = userPoints + ' pts';
+}
+
+/* ── AI PLAYBENCH ── */
+const modelLabels = { gpt4o:'OpenAI', claude:'Anthropic', llama:'Meta (Engineering)' };
+const botReplies = [
+  "I'd be happy to help with that!\n\nBased on what you've described, here are the key considerations:\n\n**1. Scope definition** — Ensure stakeholder alignment is confirmed before any work begins.\n\n**2. Timeline** — A phased approach reduces risk and allows for iterative feedback.\n\n**3. Resources** — Cross-functional teams tend to outperform siloed ones here.\n\nShall I elaborate on any of these?",
+  "Great question. Let me break this down:\n\nThe most efficient path is to identify the highest-impact item first and work outwards. In most cases, this means tackling the dependency chain before the deliverables themselves.\n\nWould you like a step-by-step plan?",
+  "Here's my analysis:\n\nLooking at the data, the trend suggests a 12–18% efficiency gain when automation is applied at the ingestion layer rather than the processing layer.\n\nThis aligns with what teams at similar scale have reported. Let me know if you'd like a deeper breakdown.",
+];
+let botIdx = 0;
+
+function updateModelBadge() {
+  const v = document.getElementById('model-sel').value;
+  document.getElementById('model-badge').textContent = modelLabels[v];
+}
+
+function handleChatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const cost = Math.floor(text.length * 1.4) + 160;
+  if (tokensUsed + cost > TOKEN_LIMIT) { toast('Daily token limit reached. Resets at midnight UTC.', 'error'); return; }
+  tokensUsed += cost;
+  addMsg('user', text);
+  input.value = '';
+  const typId = addTyping();
+  setTimeout(() => {
+    removeTyping(typId);
+    tokensUsed += 200;
+    addMsg('assistant', botReplies[botIdx++ % botReplies.length]);
+    const pct = Math.min((tokensUsed / TOKEN_LIMIT * 100), 100).toFixed(0);
+    document.getElementById('usage-fill').style.width = pct + '%';
+    document.getElementById('usage-used').textContent = tokensUsed.toLocaleString() + ' used';
+    document.getElementById('stat-tokens').textContent = tokensUsed.toLocaleString();
+  }, 900 + Math.random() * 700);
+}
+
+function addMsg(role, text) {
+  const box = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const formatted = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  d.innerHTML = `<div class="msg-bubble">${formatted}</div><div class="msg-meta">${role==='user'?'You':'Assistant'} · ${now}</div>`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+let tc = 0;
+function addTyping() {
+  const id = 'typing-'+(++tc);
+  const box = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className = 'msg assistant'; d.id = id;
+  d.innerHTML = '<div class="msg-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+  return id;
+}
+function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+/* ── HR ADMIN ── */
+function depositPoints() {
+  const amt = parseInt(document.getElementById('deposit-amount').value, 10);
+  if (!amt || amt < 1) { toast('Enter a valid points amount.', 'error'); return; }
+  const emp = document.getElementById('deposit-emp').value;
+  if (emp.includes('Jane')) {
+    userPoints += amt;
+    updatePointsUI();
+    document.getElementById('emp-jane').textContent = userPoints + ' pts';
+    buildSwagGrid('all');
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.filter-tab').classList.add('active');
+  }
+  toast('✅ ' + amt + ' pts deposited to ' + emp.split(' (')[0] + '. HR fulfillment alert sent.', 'success');
+  document.getElementById('deposit-amount').value = '';
+  document.getElementById('deposit-reason').value = '';
+}
+
+/* ── TOAST ── */
+function toast(msg, type='') {
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type?' '+type:'');
+  el.innerHTML = `<span class="toast-dot"></span>${msg}`;
+  root.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>
