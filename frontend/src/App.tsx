@@ -16,6 +16,10 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import MindscriptPage from './pages/MindscriptPage';
 import ResolveIQPage from './pages/ResolveIQPage';
 
+import ExpenseManagementPage from './pages/ExpenseManagementPage';
+import KnowledgeManagementPage from './pages/KnowledgeManagementPage';
+import IdeaTrackingPage from './pages/IdeaTrackingPage';
+
 function App() {
   return (
     <Routes>
@@ -36,6 +40,20 @@ function App() {
           {/* Feature 5.1 */}
           <Route path="/mindscript" element={<MindscriptPage />} />
           <Route path="/resolveiq" element={<ResolveIQPage />} />
+
+          {/* Feature 5.2 */}
+          <Route
+            path="/expense-management"
+            element={<ExpenseManagementPage />}
+          />
+          <Route
+            path="/knowledge-management"
+            element={<KnowledgeManagementPage />}
+          />
+          <Route
+            path="/idea-tracking"
+            element={<IdeaTrackingPage />}
+          />
 
           <Route path="/swag" element={<SwagPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />

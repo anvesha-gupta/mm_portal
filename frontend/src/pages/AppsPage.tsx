@@ -43,6 +43,32 @@ const appItems = [
     bg: 'rgba(14,165,233,0.18)',
     link: '/resolveiq',
   },
+
+  // ===== Feature 5.2 =====
+  {
+    icon: '💰',
+    title: 'Expense Management',
+    type: 'Future Module',
+    external: false,
+    bg: 'rgba(34,197,94,0.18)',
+    link: '/expense-management',
+  },
+  {
+    icon: '📚',
+    title: 'Knowledge Management',
+    type: 'Future Module',
+    external: false,
+    bg: 'rgba(168,85,247,0.18)',
+    link: '/knowledge-management',
+  },
+  {
+    icon: '💡',
+    title: 'Idea Tracking',
+    type: 'Future Module',
+    external: false,
+    bg: 'rgba(250,204,21,0.18)',
+    link: '/idea-tracking',
+  },
   // =======================
 
   {
