@@ -19,9 +19,12 @@ function LoginPage() {
           </Box>
         </Stack>
         <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', mb: 4 }}>Employee Hub · Internal Portal</Typography>
-        <Button variant="contained" fullWidth sx={{ py: 1.75, gap: 1.5, borderRadius: 2, backgroundColor: '#fff', color: '#1a1a2e', fontWeight: 700, textTransform: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.3)', '&:hover': { backgroundColor: '#fff' } }}>
+        <Button disabled variant="contained" fullWidth sx={{ py: 1.75, gap: 1.5, borderRadius: 2, backgroundColor: '#fff', color: '#1a1a2e', fontWeight: 700, textTransform: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
           Sign in with Microsoft
         </Button>
+        <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', mt: 2 }}>
+          Azure AD integration is pending — sign-in will be enabled once corporate SSO is configured.
+        </Typography>
         <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 700, mt: 3, mb: 1 }}>Demo: Select your AD role</Typography>
         <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={1}>
           {['Employee', 'Finance', 'HR Admin', 'Engineering'].map((role) => (

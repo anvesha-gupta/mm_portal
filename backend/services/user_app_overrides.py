@@ -1,49 +1,43 @@
+from typing import Any, Dict
+
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from typing import Any, Dict, List
 
-TABLE = "user_app_overrides"
-SCHEMA_PREFIX = "mm_portal"
+from models.user_app_override import UserAppOverride
 
 
-def get_all(db: Session) -> List[Dict[str, Any]]:
-    sql = text(f"SELECT * FROM {SCHEMA_PREFIX}.{TABLE} ORDER BY id")
-    result = db.execute(sql)
-    return result.mappings().all()
+def get_all(db: Session) -> list[UserAppOverride]:
+    return db.query(UserAppOverride).order_by(UserAppOverride.id).all()
 
 
-def get_by_id(db: Session, id: Any) -> Dict[str, Any] | None:
-    sql = text(f"SELECT * FROM {SCHEMA_PREFIX}.{TABLE} WHERE id = :id")
-    return db.execute(sql, {"id": id}).mappings().first()
+def get_by_id(db: Session, id: Any) -> UserAppOverride | None:
+    return db.query(UserAppOverride).filter(UserAppOverride.id == id).one_or_none()
 
 
-def create(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
-    if not payload:
-        raise ValueError("Empty payload")
-    cols = ", ".join(payload.keys())
-    vals = ", ".join(
-        ":" + k for k in payload.keys()
-    )
-    sql = text(f"INSERT INTO {SCHEMA_PREFIX}.{TABLE} ({cols}) VALUES ({vals}) RETURNING *")
-    result = db.execute(sql, payload)
+def create(db: Session, payload: Dict[str, Any]) -> UserAppOverride:
+    override = UserAppOverride(**payload)
+    db.add(override)
     db.commit()
-    return result.mappings().first()
+    db.refresh(override)
+    return override
 
 
-def update(db: Session, id: Any, payload: Dict[str, Any]) -> Dict[str, Any] | None:
+def update(db: Session, id: Any, payload: Dict[str, Any]) -> UserAppOverride | None:
     if not payload:
         return None
-    set_clause = ", ".join(f"{k} = :{k}" for k in payload.keys())
-    params = payload.copy()
-    params["id"] = id
-    sql = text(f"UPDATE {SCHEMA_PREFIX}.{TABLE} SET {set_clause} WHERE id = :id RETURNING *")
-    result = db.execute(sql, params)
+    override = get_by_id(db, id)
+    if not override:
+        return None
+    for key, value in payload.items():
+        setattr(override, key, value)
     db.commit()
-    return result.mappings().first()
+    db.refresh(override)
+    return override
 
 
-def delete(db: Session, id: Any) -> Dict[str, Any] | None:
-    sql = text(f"DELETE FROM {SCHEMA_PREFIX}.{TABLE} WHERE id = :id RETURNING *")
-    result = db.execute(sql, {"id": id})
+def delete(db: Session, id: Any) -> UserAppOverride | None:
+    override = get_by_id(db, id)
+    if not override:
+        return None
+    db.delete(override)
     db.commit()
-    return result.mappings().first()
+    return override

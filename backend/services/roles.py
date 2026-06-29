@@ -1,49 +1,43 @@
+from typing import Any, Dict
+
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from typing import Any, Dict, List
 
-TABLE = "roles"
-SCHEMA_PREFIX = "mm_portal"
+from models.role import Role
 
 
-def get_all(db: Session) -> List[Dict[str, Any]]:
-    sql = text(f"SELECT * FROM {SCHEMA_PREFIX}.{TABLE} ORDER BY id")
-    result = db.execute(sql)
-    return result.mappings().all()
+def get_all(db: Session) -> list[Role]:
+    return db.query(Role).order_by(Role.id).all()
 
 
-def get_by_id(db: Session, id: Any) -> Dict[str, Any] | None:
-    sql = text(f"SELECT * FROM {SCHEMA_PREFIX}.{TABLE} WHERE id = :id")
-    return db.execute(sql, {"id": id}).mappings().first()
+def get_by_id(db: Session, id: Any) -> Role | None:
+    return db.query(Role).filter(Role.id == id).one_or_none()
 
 
-def create(db: Session, payload: Dict[str, Any]) -> Dict[str, Any]:
-    if not payload:
-        raise ValueError("Empty payload")
-    cols = ", ".join(payload.keys())
-    vals = ", ".join(
-        ":" + k for k in payload.keys()
-    )
-    sql = text(f"INSERT INTO {SCHEMA_PREFIX}.{TABLE} ({cols}) VALUES ({vals}) RETURNING *")
-    result = db.execute(sql, payload)
+def create(db: Session, payload: Dict[str, Any]) -> Role:
+    role = Role(**payload)
+    db.add(role)
     db.commit()
-    return result.mappings().first()
+    db.refresh(role)
+    return role
 
 
-def update(db: Session, id: Any, payload: Dict[str, Any]) -> Dict[str, Any] | None:
+def update(db: Session, id: Any, payload: Dict[str, Any]) -> Role | None:
     if not payload:
         return None
-    set_clause = ", ".join(f"{k} = :{k}" for k in payload.keys())
-    params = payload.copy()
-    params["id"] = id
-    sql = text(f"UPDATE {SCHEMA_PREFIX}.{TABLE} SET {set_clause} WHERE id = :id RETURNING *")
-    result = db.execute(sql, params)
+    role = get_by_id(db, id)
+    if not role:
+        return None
+    for key, value in payload.items():
+        setattr(role, key, value)
     db.commit()
-    return result.mappings().first()
+    db.refresh(role)
+    return role
 
 
-def delete(db: Session, id: Any) -> Dict[str, Any] | None:
-    sql = text(f"DELETE FROM {SCHEMA_PREFIX}.{TABLE} WHERE id = :id RETURNING *")
-    result = db.execute(sql, {"id": id})
+def delete(db: Session, id: Any) -> Role | None:
+    role = get_by_id(db, id)
+    if not role:
+        return None
+    db.delete(role)
     db.commit()
-    return result.mappings().first()
+    return role
