@@ -13,3 +13,11 @@ class LaunchpadAppResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class LaunchpadAppCategoryResponse(BaseModel):
+    category: str
+    applications: list[LaunchpadAppResponse]
+
+    class Config:
+        orm_mode = True

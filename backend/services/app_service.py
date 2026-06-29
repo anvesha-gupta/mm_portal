@@ -14,7 +14,7 @@ class AppService:
         return (
             db.query(App)
             .filter(App.is_active.is_(True))
-            .order_by(App.category_tag, App.name)
+            .order_by(App.category_tag, App.sort_order, App.name)
             .all()
         )
 
@@ -28,6 +28,7 @@ class AppService:
 
     @staticmethod
     def get_accessible_apps(db: Session, user_id: UUID) -> list[App]:
+        # TODO: Replace the database role lookup with Azure AD group claims when SSO is implemented.
         role = get_user_role(db, user_id)
         if not role:
             return []
@@ -46,7 +47,7 @@ class AppService:
         return (
             db.query(App)
             .filter(App.id.in_(allowed_app_ids), App.is_active.is_(True))
-            .order_by(App.category_tag, App.name)
+            .order_by(App.category_tag, App.sort_order, App.name)
             .all()
         )
 
@@ -67,7 +68,7 @@ class AppService:
                     func.lower(App.category_tag).like(func.lower(pattern)),
                 ),
             )
-            .order_by(App.category_tag, App.name)
+            .order_by(App.category_tag, App.sort_order, App.name)
             .all()
         )
 

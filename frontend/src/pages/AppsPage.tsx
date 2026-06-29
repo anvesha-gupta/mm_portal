@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
@@ -22,8 +23,14 @@ interface LaunchpadApp {
   display_order: number;
 }
 
+interface DashboardAppCategory {
+  category: string;
+  applications: LaunchpadApp[];
+}
+
 function AppsPage() {
-  const [apps, setApps] = useState<LaunchpadApp[]>([]);
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<DashboardAppCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -35,8 +42,10 @@ function AppsPage() {
       setError(null);
 
       try {
-        const response = await api.get<LaunchpadApp[]>('/apps', { signal: controller.signal });
-        setApps(response.data);
+        const response = await api.get<DashboardAppCategory[]>('/dashboard/apps', {
+          signal: controller.signal,
+        });
+        setCategories(response.data);
       } catch (err) {
         if ((err as any).name !== 'CanceledError') {
           setError('Unable to load applications. Please try again.');
@@ -50,57 +59,46 @@ function AppsPage() {
     return () => controller.abort();
   }, []);
 
-  useEffect(() => {
-    if (!query.trim()) {
-      return;
+  const filteredCategories = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return categories;
     }
 
-    const controller = new AbortController();
-    const timeout = window.setTimeout(async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await api.get<LaunchpadApp[]>('/apps/search', {
-          params: { q: query },
-          signal: controller.signal,
-        });
-        setApps(response.data);
-      } catch (err) {
-        if ((err as any).name !== 'CanceledError') {
-          setError('Search failed. Please try again.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    }, 300);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [query]);
-
-  const groupedApps = useMemo(() => {
-    return apps.reduce<Record<string, LaunchpadApp[]>>((groups, app) => {
-      const category = app.category || 'Other';
-      groups[category] = groups[category] || [];
-      groups[category].push(app);
-      return groups;
-    }, {});
-  }, [apps]);
+    return categories
+      .map((category) => ({
+        ...category,
+        applications: category.applications.filter((app) => {
+          return [app.display_name, app.description, app.category]
+            .join(' ')
+            .toLowerCase()
+            .includes(normalizedQuery);
+        }),
+      }))
+      .filter((category) => category.applications.length > 0);
+  }, [categories, query]);
 
   const handleSearchClear = () => {
     setQuery('');
   };
 
-  const handleCardClick = (launchUrl: string | null) => {
-    if (!launchUrl) return;
-    window.open(launchUrl, '_blank', 'noopener,noreferrer');
+  const handleCardClick = (app: LaunchpadApp) => {
+    if (!app.launch_url) {
+      return;
+    }
+
+    if (app.is_internal) {
+      navigate(app.launch_url);
+      return;
+    }
+
+    // TODO: Propagate Azure SSO token for external SaaS applications when SSO is implemented.
+    window.open(app.launch_url, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <Box sx={{ pt: 5, pl: 3, pr: 3, pb: 4, minHeight: '100vh' }}>
-      <PageHeader title="Applications" subtitle="All internal and SaaS tools assigned to your role." />
+      <PageHeader title="Applications" subtitle="All internal and external tools assigned to your role." />
 
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, alignItems: 'center', mb: 3 }}>
         <TextField
@@ -126,14 +124,14 @@ function AppsPage() {
         </Box>
       ) : error ? (
         <Alert severity="error">{error}</Alert>
-      ) : apps.length === 0 ? (
-        <Alert severity="info">No applications found. Try changing the search terms or contact your administrator.</Alert>
+      ) : filteredCategories.length === 0 ? (
+        <Alert severity="info">No applications found. Change your search or contact your administrator.</Alert>
       ) : (
-        Object.entries(groupedApps).map(([category, categoryApps]) => (
-          <Box key={category} sx={{ mb: 4 }}>
-            <Typography sx={{ fontSize: 16, fontWeight: 700, mb: 2, color: '#fff' }}>{category}</Typography>
+        filteredCategories.map((category) => (
+          <Box key={category.category} sx={{ mb: 4 }}>
+            <Typography sx={{ fontSize: 18, fontWeight: 700, mb: 2, color: '#fff' }}>{category.category}</Typography>
             <Grid container spacing={2}>
-              {categoryApps.map((app) => (
+              {category.applications.map((app) => (
                 <Grid key={app.id} item xs={12} sm={6} md={4} lg={3}>
                   <AppCard
                     icon={app.icon || '⚙️'}
@@ -141,7 +139,7 @@ function AppsPage() {
                     subtitle={app.category}
                     description={app.description}
                     background="rgba(124,58,237,0.18)"
-                    onClick={() => handleCardClick(app.launch_url)}
+                    onClick={() => handleCardClick(app)}
                   />
                 </Grid>
               ))}

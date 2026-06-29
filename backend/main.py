@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from routers.health import router as health_router
 from routers.db_test import router as db_router
 from routers.apps_router import router as apps_router
+from routers.dashboard_router import router as dashboard_router
 from routers import (
 	users,
 	roles,
@@ -22,6 +23,7 @@ app = FastAPI(title="Motiveminds Hub API")
 app.include_router(health_router)
 app.include_router(db_router)
 app.include_router(apps_router)
+app.include_router(dashboard_router)
 
 # CRUD routers
 app.include_router(users.router)
