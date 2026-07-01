@@ -67,7 +67,7 @@ def delete_item(
 
 
 # -------------------------------------------------------------------
-# FR-4.3 : Validate reward points before swag redemption
+# FR-4.4 : Redeem swag item after validating reward points
 # -------------------------------------------------------------------
 
 @router.post("/redeem")
@@ -76,8 +76,8 @@ def validate_redemption(
     db: Session = Depends(get_db),
 ):
     """
-    Validate whether a user has sufficient reward points
-    before allowing swag redemption.
+    Validate reward points, deduct balance,
+    create redemption record and log transaction.
     """
 
     user_id = payload.get("user_id")
@@ -89,7 +89,7 @@ def validate_redemption(
             detail="user_id and swag_item_id are required.",
         )
 
-    return SwagService.validate_redemption(
+    return SwagService.redeem_item(
         db=db,
         user_id=user_id,
         swag_item_id=swag_item_id,
