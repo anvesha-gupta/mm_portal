@@ -86,7 +86,7 @@ class SwagService:
 
         required_points = validation["required_points"]
 
-        # Get swag item details for email
+        # Get swag item details
         swag_item = db.execute(
             text("""
                 SELECT
@@ -97,6 +97,24 @@ class SwagService:
             """),
             {"item_id": swag_item_id},
         ).mappings().first()
+
+        # Get user details
+        user = db.execute(
+            text("""
+                SELECT
+                    display_name,
+                    email
+                FROM mm_portal.users
+                WHERE id = :user_id
+            """),
+            {"user_id": user_id},
+        ).mappings().first()
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found."
+            )
 
         # Deduct points from user's balance
         db.execute(
@@ -172,7 +190,8 @@ class SwagService:
         # Send email notification
         EmailService.send_redemption_notification(
             db=db,
-            user_id=user_id,
+            user_name=user["display_name"],
+            user_email=user["email"],
             swag_item_name=swag_item["name"],
             points_spent=required_points,
         )

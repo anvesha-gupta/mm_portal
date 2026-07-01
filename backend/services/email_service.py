@@ -11,7 +11,8 @@ class EmailService:
     @staticmethod
     def send_redemption_notification(
         db: Session,
-        user_id: str,
+        user_name: str,
+        user_email: str,
         swag_item_name: str,
         points_spent: int,
     ):
@@ -54,8 +55,11 @@ class EmailService:
             f"""
 A new swag redemption has been placed.
 
-User ID:
-{user_id}
+User Name:
+{user_name}
+
+Email:
+{user_email}
 
 Item:
 {swag_item_name}
