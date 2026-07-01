@@ -1,9 +1,38 @@
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
+import useAuth from '../auth/useAuth';
 
 function LoginPage() {
+  const { login, loading, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const fromPath =
+    (location.state as { from?: { pathname?: string } })?.from?.pathname ||
+    sessionStorage.getItem('loginRedirectPath') ||
+    '/dashboard';
+
+  useEffect(() => {
+    if (!loading && user) {
+      const destination = fromPath === '/login' ? '/dashboard' : fromPath;
+      sessionStorage.removeItem('loginRedirectPath');
+      navigate(destination, { replace: true });
+    }
+  }, [user, loading, fromPath, navigate]);
+
+  const handleLogin = async () => {
+    const redirectPath =
+      (location.state as { from?: { pathname?: string } })?.from?.pathname ||
+      '/dashboard';
+
+    sessionStorage.setItem('loginRedirectPath', redirectPath);
+    await login();
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#08080F', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
       <Box sx={{ position: 'absolute', top: -200, left: -200, width: 600, height: 600, background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -19,11 +48,17 @@ function LoginPage() {
           </Box>
         </Stack>
         <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', mb: 4 }}>Employee Hub · Internal Portal</Typography>
-        <Button disabled variant="contained" fullWidth sx={{ py: 1.75, gap: 1.5, borderRadius: 2, backgroundColor: '#fff', color: '#1a1a2e', fontWeight: 700, textTransform: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
-          Sign in with Microsoft
+        <Button
+          onClick={handleLogin}
+          disabled={loading || !!user}
+          variant="contained"
+          fullWidth
+          sx={{ py: 1.75, gap: 1.5, borderRadius: 2, backgroundColor: '#fff', color: '#1a1a2e', fontWeight: 700, textTransform: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+        >
+          {user ? 'Signed in' : 'Sign in with Microsoft'}
         </Button>
         <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', mt: 2 }}>
-          Azure AD integration is pending — sign-in will be enabled once corporate SSO is configured.
+          Sign in with corporate Azure Active Directory using your Microsoft account.
         </Typography>
         <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 700, mt: 3, mb: 1 }}>Demo: Select your AD role</Typography>
         <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={1}>

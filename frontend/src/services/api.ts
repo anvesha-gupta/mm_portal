@@ -1,21 +1,38 @@
 import axios from 'axios';
+import { msalInstance } from '../auth/msalInstance';
+import { loginRequest } from '../auth/msalConfig';
+
+const STORAGE_AUTH_TOKEN_KEY = 'mm_auth_token';
 
 const api = axios.create({
   baseURL: '/api',
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Request interceptor to attach authorization headers when available.
-// TODO: Once Azure AD / MSAL is integrated, obtain the access token here and
-// attach it to `config.headers.Authorization = `Bearer ${token}``.
+const getAuthToken = async (): Promise<string | null> => {
+  let token = localStorage.getItem(STORAGE_AUTH_TOKEN_KEY);
+  if (!token) {
+    try {
+      const result = await msalInstance.acquireTokenSilent(loginRequest);
+      token = result.idToken ?? result.accessToken ?? null;
+      if (token) {
+        localStorage.setItem(STORAGE_AUTH_TOKEN_KEY, token);
+      }
+    } catch {
+      token = null;
+    }
+  }
+  return token;
+};
+
 api.interceptors.request.use(
   async (config) => {
-    // Placeholder: no token available yet. Keep hook for future integration.
-    // Example once implemented:
-    // const token = await tokenProvider.getAccessToken();
-    // if (token) config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
+    const token = await getAuthToken();
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)

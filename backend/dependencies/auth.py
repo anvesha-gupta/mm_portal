@@ -1,42 +1,28 @@
+from __future__ import annotations
+
 from typing import Callable
-from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from database import get_db
 from models.user import User
-from services.rbac_service import (
-    get_user_by_id,
-    has_app_access,
-    has_permission,
-    has_role,
-)
+from services.auth_service import get_current_user as get_current_user_from_token
+from services.rbac_service import has_app_access, has_permission, has_role
 
-
-def get_authenticated_user_id() -> UUID:
-    """Stub dependency for authenticated user identity.
-
-    TODO: Replace this with Azure AD authentication / token validation.
-    """
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Authentication not implemented. Inject Azure AD user here.",
-    )
+security_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
     db: Session = Depends(get_db),
-    user_id: UUID = Depends(get_authenticated_user_id),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
 ) -> User:
-    """Return the current authenticated User from the database."""
-    user = get_user_by_id(db, user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authenticated user not found.",
-        )
-    return user
+    """Return the authenticated user from a bearer token."""
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authentication token")
+
+    return get_current_user_from_token(db, credentials.credentials)
 
 
 def _authorization_exception(detail: str) -> HTTPException:
@@ -51,9 +37,7 @@ def require_role(role_name: str) -> Callable[[User, Session], User]:
         db: Session = Depends(get_db),
     ) -> User:
         if not has_role(db, current_user.id, role_name):
-            raise _authorization_exception(
-                f"Access denied: role '{role_name}' required."
-            )
+            raise _authorization_exception(f"Access denied: role '{role_name}' required.")
         return current_user
 
     return dependency
@@ -67,9 +51,7 @@ def require_permission(permission_name: str) -> Callable[[User, Session], User]:
         db: Session = Depends(get_db),
     ) -> User:
         if not has_permission(db, current_user.id, permission_name):
-            raise _authorization_exception(
-                f"Access denied: permission '{permission_name}' required."
-            )
+            raise _authorization_exception(f"Access denied: permission '{permission_name}' required.")
         return current_user
 
     return dependency
@@ -83,9 +65,7 @@ def require_app_access(app_key: str) -> Callable[[User, Session], User]:
         db: Session = Depends(get_db),
     ) -> User:
         if not has_app_access(db, current_user.id, app_key):
-            raise _authorization_exception(
-                f"Access denied: app access '{app_key}' required."
-            )
+            raise _authorization_exception(f"Access denied: app access '{app_key}' required.")
         return current_user
 
     return dependency

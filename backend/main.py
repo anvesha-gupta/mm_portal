@@ -1,31 +1,53 @@
 from fastapi import FastAPI
+
 from routers.health import router as health_router
 from routers.db_test import router as db_router
 from routers.apps_router import router as apps_router
+from routers import playbench_llm
+from routers import admin_llm_dashboard
+import services.tools.portal_tools
 from routers.dashboard_router import router as dashboard_router
 from routers import (
-	users,
-	roles,
-	role_app_permissions,
-	user_app_overrides,
-	user_points,
-	points_transactions,
-	swag_items,
-	swag_redemptions,
-	playbench_sessions,
-	playbench_messages,
-	llm_models,
-	audit_log,
+    auth,
+    users,
+    roles,
+    role_app_permissions,
+    user_app_overrides,
+    user_points,
+    points_transactions,
+    swag_items,
+    swag_redemptions,
+    playbench_sessions,
+    playbench_messages,
+    llm_models,
+    audit_log,
 )
 
-app = FastAPI(title="Motiveminds Hub API")
+app = FastAPI(
+    title="Motiveminds Hub API",
+    version="1.0.0",
+    description="Backend API for the Motiveminds Hub Portal",
+)
+
+# --------------------------------------------------
+# System Routers
+# --------------------------------------------------
 
 app.include_router(health_router)
 app.include_router(db_router)
 app.include_router(apps_router)
 app.include_router(dashboard_router)
 
-# CRUD routers
+# --------------------------------------------------
+# Authentication
+# --------------------------------------------------
+
+app.include_router(auth.router)
+
+# --------------------------------------------------
+# CRUD Routers
+# --------------------------------------------------
+
 app.include_router(users.router)
 app.include_router(roles.router)
 app.include_router(role_app_permissions.router)
@@ -38,3 +60,5 @@ app.include_router(playbench_sessions.router)
 app.include_router(playbench_messages.router)
 app.include_router(llm_models.router)
 app.include_router(audit_log.router)
+app.include_router(playbench_llm.router)
+app.include_router(admin_llm_dashboard.router)

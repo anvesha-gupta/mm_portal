@@ -1,27 +1,14 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import useAuth from './useAuth';
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import useAuth from "./useAuth";
 
-/**
- * ProtectedRoute guards nested routes and redirects unauthenticated users
- * to the login page. While auth state is loading it shows a spinner.
- */
-const ProtectedRoute: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
+const ProtectedRoute = () => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (loading) return <div />;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
 
   return <Outlet />;
 };

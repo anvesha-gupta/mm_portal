@@ -9,7 +9,7 @@ from pydantic import BaseModel, constr
 class UserAppOverrideBase(BaseModel):
     user_id: UUID
     app_id: constr(min_length=1)
-    override_type: constr(regex="^(grant|revoke)$")
+    override_type: constr(pattern="^(grant|revoke)$")
     granted_by: UUID | None = None
 
     class Config:

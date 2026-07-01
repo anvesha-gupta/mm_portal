@@ -1,67 +1,69 @@
-import React, { useEffect, useState } from 'react';
-import AuthContext, { AuthContextType, User } from './AuthContext';
+import React, { useEffect, useMemo, useState } from "react";
+import AuthContext, { User } from "./AuthContext";
+import AuthService from "./authService";
+import { msalInstance } from "./msalInstance";
 
-interface AuthProviderProps {
-	children: React.ReactNode;
+const TOKEN_KEY = "mm_auth_token";
+const LEGACY_TOKEN_KEY = "token";
+
+interface Props {
+  children: React.ReactNode;
 }
 
-/**
- * AuthProvider component wires up the `AuthContext` and exposes a minimal,
- * production-ready auth state container. The `login` and `logout` methods are
- * placeholders — integrate Azure AD / MSAL in these functions later.
- */
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-	const [user, setUser] = useState<User | null>(null);
-	const [loading, setLoading] = useState<boolean>(true);
+export function AuthProvider({ children }: Props) {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
-	// Simulate restoring a session on mount. In a real implementation this would
-	// verify tokens, refresh sessions, or consult a backend / MSAL cache.
-	useEffect(() => {
-		const raw = localStorage.getItem('mm_user');
-		if (raw) {
-			try {
-				setUser(JSON.parse(raw) as User);
-			} catch {
-				localStorage.removeItem('mm_user');
-			}
-		}
-		// End of restore – set loading false so UI can render.
-		setLoading(false);
-	}, []);
+  const auth = useMemo(() => new AuthService(msalInstance), []);
 
-	// Placeholder login: implement Azure AD (MSAL) flow here later.
-	const login = async (): Promise<void> => {
-		setLoading(true);
-		try {
-			// TODO: Integrate MSAL login (loginPopup/loginRedirect) and set user.
-			return Promise.resolve();
-		} finally {
-			setLoading(false);
-		}
-	};
+  useEffect(() => {
+    async function init() {
+      try {
+        await auth.initialize();
 
-	// Placeholder logout: implement Azure AD sign-out here later.
-	const logout = async (): Promise<void> => {
-		setLoading(true);
-		try {
-			// TODO: Integrate MSAL logout (logoutRedirect) and clear user session.
-			setUser(null);
-			localStorage.removeItem('mm_user');
-			return Promise.resolve();
-		} finally {
-			setLoading(false);
-		}
-	};
+        const result = await auth.getUser();
 
-	const contextValue: AuthContextType = {
-		user,
-		isAuthenticated: Boolean(user),
-		loading,
-		login,
-		logout,
-	};
+        if (result?.account) {
+          if (result.token) {
+            localStorage.setItem(TOKEN_KEY, result.token);
+            localStorage.setItem(LEGACY_TOKEN_KEY, result.token);
+          }
 
-	return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-};
+          setUser({
+            id: result.account.homeAccountId,
+            name: result.account.name ?? "",
+            email: result.account.username,
+          });
+        }
+      } catch (err) {
+        console.error("Auth init failed", err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-export default AuthProvider;
+    init();
+  }, [auth]);
+
+  const login = () => auth.login();
+
+  const logout = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
+    return auth.logout();
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        loading,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
