@@ -1,34 +1,59 @@
 import { useEffect, useState } from "react";
+import api, { API_BASE_URL, getAuthToken } from "../services/api";
 
 interface PlaybenchSession {
   id: string;
+  created_at?: string;
   [key: string]: unknown;
+}
+
+interface PlaybenchMessage {
+  id: string;
+  role: string;
+  content: string;
 }
 
 export default function PlaybenchPage() {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
   const [model, setModel] = useState("gpt-4o");
+  const [availableModels, setAvailableModels] = useState<string[]>(["gpt-4o"]);
 
   const [sessions, setSessions] = useState<PlaybenchSession[]>([]);
+  const [messages, setMessages] = useState<PlaybenchMessage[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // ---------------------------
   // LOAD SESSIONS
   // ---------------------------
   useEffect(() => {
     loadSessions();
+    loadModels();
   }, []);
 
-  const loadSessions = async () => {
-    const res = await fetch("http://localhost:8000/playbench/sessions", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("mm_auth_token")}`
+  const loadModels = async () => {
+    try {
+      const { data } = await api.get("/playbench/models");
+      setAvailableModels(data.models || ["gpt-4o"]);
+      if (data.models?.length) {
+        setModel(data.models[0]);
       }
-    });
+    } catch (error) {
+      console.error("Error loading models", error);
+      setError("Unable to load available models.");
+    }
+  };
 
-    const data = await res.json();
-    setSessions(data.sessions || []);
+  const loadSessions = async () => {
+    try {
+      const { data } = await api.get("/playbench/sessions");
+      setSessions(data.sessions || []);
+    } catch (error) {
+      console.error("Error loading sessions", error);
+      setError("Unable to load Playbench sessions.");
+    }
   };
 
   // ---------------------------
@@ -37,75 +62,97 @@ export default function PlaybenchPage() {
   const loadMessages = async (sessionId: string) => {
     setActiveSession(sessionId);
     setResponse("");
+    setMessages([]);
 
-    const res = await fetch(
-      `http://localhost:8000/playbench/sessions/${sessionId}/messages`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("mm_auth_token")}`,
-        },
-      }
-    );
-
-    const data = await res.json();
-
-    let text = "";
-    for (let msg of data.messages || []) {
-      text += `${msg.role.toUpperCase()}: ${msg.content}\n\n`;
+    try {
+      const { data } = await api.get(`/playbench/sessions/${sessionId}/messages`);
+      setMessages(data.messages || []);
+      setResponse(
+        (data.messages || [])
+          .map((msg: PlaybenchMessage) => `${msg.role.toUpperCase()}: ${msg.content}`)
+          .join("\n\n")
+      );
+    } catch (error) {
+      console.error("Error loading messages", error);
     }
-
-    setResponse(text);
   };
 
   // ---------------------------
   // SEND MESSAGE (STREAM)
   // ---------------------------
   const handleSend = async () => {
-    setResponse("");
-
-    const res = await fetch("http://localhost:8000/playbench/chat/stream", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("mm_auth_token")}`,
-      },
-      body: JSON.stringify({
-        prompt,
-        model,
-        session_id: activeSession,
-      }),
-    });
-
-    const reader = res.body?.getReader();
-    if (!reader) {
-      setResponse("No response body available.");
+    if (!prompt.trim()) {
       return;
     }
-    const decoder = new TextDecoder();
 
-    let fullText = "";
+    setLoading(true);
+    setResponse("");
 
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
+    try {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error("Unable to obtain authentication token.");
+      }
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n");
+      const res = await fetch(`${API_BASE_URL}/playbench/chat/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          prompt,
+          model,
+          session_id: activeSession,
+        }),
+      });
 
-      for (let line of lines) {
-        if (line.startsWith("data: ")) {
-          const json = JSON.parse(line.replace("data: ", ""));
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Streaming request failed");
+      }
 
+      const reader = res.body?.getReader();
+      if (!reader) {
+        throw new Error("No response body available.");
+      }
+      const decoder = new TextDecoder();
+
+      let fullText = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n").filter(Boolean);
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+
+          const payload = line.replace("data: ", "").trim();
+          if (payload === "[DONE]") {
+            continue;
+          }
+
+          const json = JSON.parse(payload);
           if (json.token) {
-            fullText += json.token + " ";
+            fullText += json.token;
             setResponse(fullText);
           }
 
           if (json.done) {
-            loadSessions(); // refresh sessions after chat
+            await loadSessions();
           }
         }
       }
+
+      setPrompt("");
+    } catch (error) {
+      console.error("Error sending message", error);
+      setResponse("Unable to send message. Check browser console for details.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,10 +187,13 @@ export default function PlaybenchPage() {
         <h2>Playbench</h2>
 
         <select value={model} onChange={(e) => setModel(e.target.value)}>
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="claude-3-5-sonnet">Claude</option>
-          <option value="llama-3">LLaMA</option>
+          {availableModels.map((availableModel) => (
+            <option key={availableModel} value={availableModel}>
+              {availableModel}
+            </option>
+          ))}
         </select>
+        {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
 
         <br /><br />
 

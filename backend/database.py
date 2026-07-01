@@ -1,21 +1,29 @@
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
+from pathlib import Path
 import os
 
-load_dotenv()
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+
+BASE_DIR = Path(__file__).resolve().parent
+DOTENV_PATH = BASE_DIR / ".env"
+load_dotenv(dotenv_path=DOTENV_PATH)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-
-print("🔥 DATABASE_URL =", DATABASE_URL)  # ✅ MOVE HERE
+if DATABASE_URL is None:
+    raise RuntimeError(
+        "DATABASE_URL is not defined. Create backend/.env with DATABASE_URL=postgresql://user:pass@host:port/dbname "
+        "or set DATABASE_URL in the process environment."
+    )
 
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine
+    bind=engine,
 )
+
 
 def get_db():
     db = SessionLocal()

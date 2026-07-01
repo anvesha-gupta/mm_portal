@@ -1,4 +1,6 @@
+import os
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from routers.health import router as health_router
 from routers.db_test import router as db_router
@@ -27,6 +29,20 @@ app = FastAPI(
     title="Motiveminds Hub API",
     version="1.0.0",
     description="Backend API for the Motiveminds Hub Portal",
+)
+
+origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --------------------------------------------------

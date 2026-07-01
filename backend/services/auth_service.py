@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
 import os
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
+import urllib.request
 
+import jwt
+from jwt import PyJWKClient
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -74,21 +78,72 @@ class AuthService:
         }
 
 
+def _fetch_azure_openid_config(tenant_id: str) -> dict[str, Any]:
+    url = f"https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration"
+    with urllib.request.urlopen(url, timeout=10) as response:
+        return json.loads(response.read().decode())
+
+
+def _validate_azure_token(token: str, tenant_id: str, client_id: str) -> dict[str, Any]:
+    openid_config = _fetch_azure_openid_config(tenant_id)
+    jwks_uri = openid_config.get("jwks_uri")
+    if not jwks_uri:
+        raise ValueError("Unable to resolve Azure AD JWKS URI")
+
+    jwk_client = PyJWKClient(jwks_uri)
+    signing_key = jwk_client.get_signing_key_from_jwt(token)
+
+    return jwt.decode(
+        token,
+        signing_key.key,
+        algorithms=["RS256"],
+        audience=client_id,
+        issuer=openid_config.get("issuer"),
+    )
+
+
+def _find_azure_user(db: Session, payload: dict[str, Any]) -> User | None:
+    oid = payload.get("oid")
+    email = payload.get("preferred_username") or payload.get("email") or payload.get("upn")
+
+    if oid:
+        return db.query(User).filter(User.azure_oid == oid).one_or_none()
+
+    if email:
+        normalized = email.strip().lower()
+        return db.query(User).filter(User.email.ilike(normalized)).one_or_none()
+
+    return None
+
+
 def get_current_user(db: Session, token: str) -> User:
-    """Validate a JWT token and return the corresponding user record."""
+    """Validate a bearer token and return the corresponding user record."""
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authentication token")
 
+    user: User | None = None
+
+    # First try local application JWT support.
     try:
         payload = decode_access_token(token)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token") from exc
+        subject = payload.get("sub")
+        if subject:
+            user = get_user_by_id(db, UUID(subject))
+    except Exception:
+        user = None
 
-    subject = payload.get("sub")
-    if not subject:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token")
+    # If local auth did not identify a user, try Azure AD validation.
+    if user is None:
+        tenant_id = os.getenv("AZURE_AD_TENANT_ID") or os.getenv("VITE_AZURE_TENANT_ID")
+        client_id = os.getenv("AZURE_AD_CLIENT_ID") or os.getenv("VITE_AZURE_CLIENT_ID")
 
-    user = get_user_by_id(db, UUID(subject))
+        if tenant_id and client_id:
+            try:
+                payload = _validate_azure_token(token, tenant_id, client_id)
+                user = _find_azure_user(db, payload)
+            except Exception as exc:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token") from exc
+
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticated user not found")
 
