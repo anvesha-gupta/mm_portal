@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from dependencies.auth import get_current_user as get_current_user_dependency
-from schemas.auth import CurrentUserResponse, LoginRequest, LoginResponse, TokenResponse
+from schemas.auth import LoginRequest, LoginResponse, TokenResponse
 from services.auth_service import AuthService
+from schemas.auth import UserResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -25,10 +26,10 @@ def logout() -> TokenResponse:
     return TokenResponse(access_token="", token_type="bearer")
 
 
-@router.get("/me", response_model=CurrentUserResponse, summary="Get the current user", description="Return the authenticated user's profile details.")
-def get_me(current_user=Depends(get_current_user_dependency)) -> CurrentUserResponse:
+@router.get("/me", response_model=UserResponse, summary="Get the current user", description="Return the authenticated user's profile details.")
+def get_me(current_user=Depends(get_current_user_dependency)) -> UserResponse:
     """Return the authenticated user's profile."""
-    return CurrentUserResponse(
+    return UserResponse(
         id=current_user.id,
         email=current_user.email,
         display_name=current_user.display_name,
