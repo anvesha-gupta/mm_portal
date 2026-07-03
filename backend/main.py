@@ -22,6 +22,7 @@ from routers import (
     playbench_messages,
     llm_models,
     audit_log,
+    employee_assignments,
 )
 
 app = FastAPI(
@@ -77,3 +78,4 @@ app.include_router(llm_models.router)
 app.include_router(audit_log.router)
 app.include_router(playbench_llm.router)
 app.include_router(admin_llm_dashboard.router)
+app.include_router(employee_assignments.router)

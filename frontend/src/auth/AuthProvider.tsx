@@ -8,6 +8,8 @@ const LEGACY_TOKEN_KEY = "token";
 const APP_ENV = (import.meta.env.VITE_APP_ENV || "local").toLowerCase();
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
+const getStorage = () => (APP_ENV === "local" ? sessionStorage : localStorage);
+
 interface Props {
   children: React.ReactNode;
 }
@@ -21,7 +23,7 @@ export function AuthProvider({ children }: Props) {
   useEffect(() => {
     async function init() {
       if (APP_ENV === "local") {
-        const token = localStorage.getItem(TOKEN_KEY);
+        const token = getStorage().getItem(TOKEN_KEY);
         if (token) {
           try {
             const response = await fetch(`${API_BASE_URL}/auth/me`, {
@@ -37,8 +39,8 @@ export function AuthProvider({ children }: Props) {
                 email: data.email,
               });
             } else {
-              localStorage.removeItem(TOKEN_KEY);
-              localStorage.removeItem(LEGACY_TOKEN_KEY);
+              getStorage().removeItem(TOKEN_KEY);
+              getStorage().removeItem(LEGACY_TOKEN_KEY);
             }
           } catch (err) {
             console.error("Local auth init failed:", err);
@@ -53,8 +55,8 @@ export function AuthProvider({ children }: Props) {
 
           if (result?.account) {
             if (result.token) {
-              localStorage.setItem(TOKEN_KEY, result.token);
-              localStorage.setItem(LEGACY_TOKEN_KEY, result.token);
+              getStorage().setItem(TOKEN_KEY, result.token);
+              getStorage().setItem(LEGACY_TOKEN_KEY, result.token);
             }
 
             setUser({
@@ -91,8 +93,8 @@ export function AuthProvider({ children }: Props) {
       }
 
       if (data.access_token) {
-        localStorage.setItem(TOKEN_KEY, data.access_token);
-        localStorage.setItem(LEGACY_TOKEN_KEY, data.access_token);
+        getStorage().setItem(TOKEN_KEY, data.access_token);
+        getStorage().setItem(LEGACY_TOKEN_KEY, data.access_token);
       }
 
       if (data.user) {
@@ -126,8 +128,8 @@ export function AuthProvider({ children }: Props) {
       await auth.logout();
     }
     setUser(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(LEGACY_TOKEN_KEY);
+    getStorage().removeItem(TOKEN_KEY);
+    getStorage().removeItem(LEGACY_TOKEN_KEY);
   }
 
   return (

@@ -3,6 +3,8 @@ import { msalInstance } from '../auth/msalInstance';
 import { loginRequest } from '../auth/msalConfig';
 
 const STORAGE_AUTH_TOKEN_KEY = 'mm_auth_token';
+const APP_ENV = (import.meta.env.VITE_APP_ENV || 'local').toLowerCase();
+const getStorage = () => (APP_ENV === 'local' ? sessionStorage : localStorage);
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -14,7 +16,7 @@ const api = axios.create({
 });
 
 export const getAuthToken = async (): Promise<string | null> => {
-  let token = localStorage.getItem(STORAGE_AUTH_TOKEN_KEY);
+  let token = getStorage().getItem(STORAGE_AUTH_TOKEN_KEY);
 
   if (!token) {
     const account = msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0];
@@ -29,7 +31,7 @@ export const getAuthToken = async (): Promise<string | null> => {
       });
       token = result.accessToken || result.idToken || null;
       if (token) {
-        localStorage.setItem(STORAGE_AUTH_TOKEN_KEY, token);
+        getStorage().setItem(STORAGE_AUTH_TOKEN_KEY, token);
       }
     } catch (error) {
       console.warn('Token acquisition failed', error);

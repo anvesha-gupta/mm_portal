@@ -11,6 +11,7 @@ interface AppCardProps {
   external?: boolean;
   background: string;
   link?: string;
+  url?: string;
 }
 
 function AppCard({
@@ -20,11 +21,14 @@ function AppCard({
   external,
   background,
   link,
+  url,
 }: AppCardProps) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    if (link) {
+    if (external && url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else if (link) {
       navigate(link);
     }
   };
@@ -41,11 +45,12 @@ function AppCard({
         boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
         position: 'relative',
         overflow: 'hidden',
-        cursor: link ? 'pointer' : 'default',
+        cursor: 'pointer',
+        transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
           bgcolor: '#181830',
-          transform: link ? 'translateY(-2px)' : 'none',
-          transition: 'transform 0.2s ease',
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         },
       }}
     >

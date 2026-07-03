@@ -3,13 +3,14 @@ import Grid from '@mui/material/Grid';
 import PageHeader from '../components/PageHeader';
 import AppCard from '../components/AppCard';
 
-const appItems = [
+export const appItems = [
   {
     icon: '🛫',
     title: 'Wyngs',
     type: 'Internal',
     external: false,
     bg: 'rgba(124,58,237,0.18)',
+    link: '/wyngs',
   },
   {
     icon: '📊',
@@ -17,6 +18,7 @@ const appItems = [
     type: 'Internal',
     external: false,
     bg: 'rgba(16,185,129,0.18)',
+    link: '/estimatrix',
   },
   {
     icon: '🤖',
@@ -24,6 +26,7 @@ const appItems = [
     type: 'Internal',
     external: false,
     bg: 'rgba(168,85,247,0.18)',
+    link: '/myra',
   },
 
   // ===== Feature 5.1 =====
@@ -41,7 +44,7 @@ const appItems = [
     type: 'AI Tool',
     external: false,
     bg: 'rgba(14,165,233,0.18)',
-    link: '/resolveiq',
+    link: '/resolve-iq',
   },
 
   // ===== Feature 5.2 =====
@@ -77,6 +80,7 @@ const appItems = [
     type: 'SaaS',
     external: true,
     bg: 'rgba(56,189,248,0.15)',
+    url: 'https://keka.placeholder.com',
   },
   {
     icon: '☁️',
@@ -84,6 +88,7 @@ const appItems = [
     type: 'SaaS',
     external: true,
     bg: 'rgba(56,189,248,0.15)',
+    url: 'https://salesforce.placeholder.com',
   },
   {
     icon: '📒',
@@ -91,6 +96,7 @@ const appItems = [
     type: 'SaaS',
     external: true,
     bg: 'rgba(16,185,129,0.18)',
+    url: 'https://zohobooks.placeholder.com',
   },
   {
     icon: '🛡️',
@@ -98,6 +104,7 @@ const appItems = [
     type: 'Internal',
     external: false,
     bg: 'rgba(239,68,68,0.15)',
+    link: '/admin',
   },
   {
     icon: '🦊',
@@ -105,6 +112,7 @@ const appItems = [
     type: 'SaaS',
     external: true,
     bg: 'rgba(245,158,11,0.18)',
+    url: 'https://gitlab.placeholder.com',
   },
 ];
 
@@ -134,6 +142,7 @@ function AppsPage() {
               external={app.external}
               background={app.bg}
               link={app.link}
+              url={app.url}
             />
           </Grid>
         ))}

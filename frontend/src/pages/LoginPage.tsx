@@ -206,7 +206,7 @@ export default function LoginPage() {
         )}
 
         {isLocal ? (
-          <Box component="form" onSubmit={handleLocalLogin}>
+          <Box component="form" onSubmit={handleLocalLogin} autoComplete="off">
             <Stack spacing={2.5}>
               <TextField
                 label="Username"
@@ -215,9 +215,11 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={localLoading || authLoading}
+                autoComplete="off"
                 InputLabelProps={{ style: { color: "rgba(255,255,255,0.6)" } }}
                 inputProps={{
                   style: { color: "#fff", backgroundColor: "transparent" },
+                  autoComplete: "off"
                 }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
@@ -241,9 +243,11 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={localLoading || authLoading}
+                autoComplete="new-password"
                 InputLabelProps={{ style: { color: "rgba(255,255,255,0.6)" } }}
                 inputProps={{
                   style: { color: "#fff", backgroundColor: "transparent" },
+                  autoComplete: "new-password"
                 }}
                 InputProps={{
                   endAdornment: (

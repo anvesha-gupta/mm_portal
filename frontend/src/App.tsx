@@ -15,6 +15,9 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 import MindscriptPage from "./pages/MindscriptPage";
 import ResolveIQPage from "./pages/ResolveIQPage";
+import WyngsPage from "./pages/WyngsPage";
+import EstimatrixPage from "./pages/EstimatrixPage";
+import MyRAPage from "./pages/MyRAPage";
 
 import ExpenseManagementPage from "./pages/ExpenseManagementPage";
 import KnowledgeManagementPage from "./pages/KnowledgeManagementPage";
@@ -35,7 +38,12 @@ function App() {
 
           {/* Feature 5.1 */}
           <Route path="/mindscript" element={<MindscriptPage />} />
-          <Route path="/resolveiq" element={<ResolveIQPage />} />
+          <Route path="/resolve-iq" element={<ResolveIQPage />} />
+
+          {/* New internal systems */}
+          <Route path="/wyngs" element={<WyngsPage />} />
+          <Route path="/estimatrix" element={<EstimatrixPage />} />
+          <Route path="/myra" element={<MyRAPage />} />
 
           {/* Feature 5.2 */}
           <Route
