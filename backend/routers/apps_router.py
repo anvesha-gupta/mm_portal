@@ -102,3 +102,13 @@ def delete_app(
     if not deleted:
         raise HTTPException(status_code=404, detail="App not found")
     return
+
+
+@router.post("/{id}/launch")
+def launch_app(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from services.application_launch_service import ApplicationLaunchService
+    return ApplicationLaunchService.get_launch_info(db, current_user, id)

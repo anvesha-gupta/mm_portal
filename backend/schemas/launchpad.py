@@ -21,3 +21,10 @@ class LaunchpadAppCategoryResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class AppLaunchResponse(BaseModel):
+    launch_type: str
+    route: str | None = None
+    url: str | None = None
+    redirect_url: str | None = None

@@ -5,22 +5,25 @@ import AppCard from '../components/AppCard';
 
 export const appItems = [
   {
+    id: 'wyngs',
     icon: '🛫',
     title: 'Wyngs',
     type: 'Internal',
-    external: false,
+    external: true,
     bg: 'rgba(124,58,237,0.18)',
-    link: '/wyngs',
+    url: 'https://motiveminds.wyngs.pro/app/home',
   },
   {
+    id: 'estimatrix',
     icon: '📊',
     title: 'Estimatrix',
     type: 'Internal',
-    external: false,
+    external: true,
     bg: 'rgba(16,185,129,0.18)',
-    link: '/estimatrix',
+    url: 'https://estdev.wyngs.pro/',
   },
   {
+    id: 'myra',
     icon: '🤖',
     title: 'MyRA',
     type: 'Internal',
@@ -31,6 +34,7 @@ export const appItems = [
 
   // ===== Feature 5.1 =====
   {
+    id: 'mindscript',
     icon: '🧠',
     title: 'Mindscript',
     type: 'AI Tool',
@@ -39,6 +43,7 @@ export const appItems = [
     link: '/mindscript',
   },
   {
+    id: 'resolve-iq',
     icon: '🧩',
     title: 'Resolve IQ',
     type: 'AI Tool',
@@ -49,6 +54,7 @@ export const appItems = [
 
   // ===== Feature 5.2 =====
   {
+    id: 'expense-management',
     icon: '💰',
     title: 'Expense Management',
     type: 'Future Module',
@@ -57,6 +63,7 @@ export const appItems = [
     link: '/expense-management',
   },
   {
+    id: 'knowledge-management',
     icon: '📚',
     title: 'Knowledge Management',
     type: 'Future Module',
@@ -65,6 +72,7 @@ export const appItems = [
     link: '/knowledge-management',
   },
   {
+    id: 'idea-tracking',
     icon: '💡',
     title: 'Idea Tracking',
     type: 'Future Module',
@@ -75,22 +83,25 @@ export const appItems = [
   // =======================
 
   {
+    id: 'keka',
     icon: '🏢',
     title: 'Keka',
     type: 'SaaS',
     external: true,
     bg: 'rgba(56,189,248,0.15)',
-    url: 'https://keka.placeholder.com',
+    url: 'https://app.keka.com/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%26client_id%3D987cc971-fc22-4454-99f9-16c078fa7ff6%26state%3DaTM5RDA4YmdYVWJJNF95dVU5bmEuTWI2VDdSajRveG4zbDlEdi5Vbl85LnNr%26redirect_uri%3Dhttps%253A%252F%252Fmotiveminds.keka.com%26scope%3Dopenid%2520offline_access%2520kekahr.api%2520hiro.api%26code_challenge%3DiQ3UcfF4-1EBNwyiQSX0-m1DwsEdOWN_t5Eo6gw85bs%26code_challenge_method%3DS256%26nonce%3DaTM5RDA4YmdYVWJJNF95dVU5bmEuTWI2VDdSajRveG4zbDlEdi5Vbl85LnNr',
   },
   {
+    id: 'salesforce',
     icon: '☁️',
     title: 'Salesforce',
     type: 'SaaS',
     external: true,
     bg: 'rgba(56,189,248,0.15)',
-    url: 'https://salesforce.placeholder.com',
+    url: 'https://www.salesforce.com/in/?ir=1',
   },
   {
+    id: 'zohobooks',
     icon: '📒',
     title: 'Zoho Books',
     type: 'SaaS',
@@ -99,6 +110,7 @@ export const appItems = [
     url: 'https://zohobooks.placeholder.com',
   },
   {
+    id: 'admin',
     icon: '🛡️',
     title: 'Admin Panel',
     type: 'Internal',
@@ -107,12 +119,13 @@ export const appItems = [
     link: '/admin',
   },
   {
+    id: 'gitlab',
     icon: '🦊',
     title: 'GitLab',
     type: 'SaaS',
     external: true,
     bg: 'rgba(245,158,11,0.18)',
-    url: 'https://gitlab.placeholder.com',
+    url: 'https://github.com/enterprises/motiveminds-consulting-pvt-ltd/sso',
   },
 ];
 
@@ -136,6 +149,7 @@ function AppsPage() {
         {appItems.map((app) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={app.title}>
             <AppCard
+              id={app.id}
               icon={app.icon}
               title={app.title}
               type={app.type}

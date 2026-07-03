@@ -3,8 +3,10 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 interface AppCardProps {
+  id?: string;
   icon: string;
   title: string;
   type: string;
@@ -15,6 +17,7 @@ interface AppCardProps {
 }
 
 function AppCard({
+  id,
   icon,
   title,
   type,
@@ -25,7 +28,26 @@ function AppCard({
 }: AppCardProps) {
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    if (id) {
+      try {
+        const { data } = await api.post(`/api/apps/${id}/launch`);
+        if (data.launch_type === 'sso' && data.redirect_url) {
+          window.open(data.redirect_url, "_blank", "noopener,noreferrer");
+          return;
+        } else if (data.launch_type === 'external' && data.url) {
+          window.open(data.url, "_blank", "noopener,noreferrer");
+          return;
+        } else if (data.launch_type === 'internal' && data.route) {
+          navigate(data.route);
+          return;
+        }
+      } catch (error) {
+        console.error("Error launching app via SSO, falling back to static URL config", error);
+      }
+    }
+
+    // Fallback if no id or if the backend request fails
     if (external && url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else if (link) {

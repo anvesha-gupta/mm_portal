@@ -72,6 +72,7 @@ function DashboardPage() {
           {appItems.map((app) => (
             <AppCard
               key={app.title}
+              id={app.id}
               icon={app.icon}
               title={app.title}
               type={app.type}
