@@ -7,10 +7,12 @@ import CardContent from '@mui/material/CardContent';
 import AppCard from '../components/AppCard';
 import { appItems } from './AppsPage';
 import api from '../services/api';
+import { usePoints } from '../context/PointsContext';
 
 function DashboardPage() {
   const [tokenSummary, setTokenSummary] = useState({ assigned: 0, used: 0, remaining: 0 });
   const [loadingTokens, setLoadingTokens] = useState(true);
+  const { balance, orders } = usePoints();
 
   useEffect(() => {
     async function loadStats() {
@@ -27,7 +29,7 @@ function DashboardPage() {
   }, []);
 
   const stats = [
-    { label: 'Points Balance', value: '750', delta: '↑ 200 pts this month', color: '#F59E0B' },
+    { label: 'Points Balance', value: balance.toString(), delta: '↑ 200 pts this month', color: '#F59E0B' },
     { 
       label: 'AI Tokens Today', 
       value: loadingTokens ? '...' : tokenSummary.used.toLocaleString(), 
@@ -35,7 +37,12 @@ function DashboardPage() {
       color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' 
     },
     { label: 'Apps Available', value: '8', delta: 'based on your AD role', color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
-    { label: 'Orders Pending', value: '1', delta: 'Hoodie · in fulfillment', color: '#FFFFFF' },
+    {
+      label: 'Orders Pending',
+      value: orders.length.toString(),
+      delta: orders.length > 0 ? `${orders[orders.length - 1].emoji} ${orders[orders.length - 1].name} · in fulfillment` : 'No pending orders',
+      color: '#FFFFFF',
+    },
   ];
 
   return (
@@ -55,7 +62,7 @@ function DashboardPage() {
               <Card sx={{ bgcolor: '#12121F', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
                 <CardContent>
                   <Typography sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)', mb: 1 }}>{stat.label}</Typography>
-                  <Typography sx={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1.5px', background: stat.color, WebkitBackgroundClip: stat.color.includes('gradient') ? 'text' : undefined, WebkitTextFillColor: stat.color.includes('gradient') ? 'transparent' : undefined, color: stat.color.includes('gradient') ? undefined : stat.color }}>
+                  <Typography sx={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1.5px', background: stat.color.includes('gradient') ? stat.color : undefined, WebkitBackgroundClip: stat.color.includes('gradient') ? 'text' : undefined, WebkitTextFillColor: stat.color.includes('gradient') ? 'transparent' : undefined, color: stat.color.includes('gradient') ? undefined : stat.color }}>
                     {displayValue}
                   </Typography>
                   <Typography sx={{ fontSize: 11, mt: 0.5, color: stat.label === 'Orders Pending' ? 'rgba(255,255,255,0.45)' : stat.color === '#F59E0B' ? '#10B981' : 'rgba(255,255,255,0.7)' }}>{stat.delta}</Typography>

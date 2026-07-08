@@ -9,6 +9,7 @@ import App from "./App";
 import theme from "./theme";
 import { AuthProvider } from "./auth/AuthProvider";
 import { msalInstance } from "./auth/msalInstance";
+import { PointsProvider } from "./context/PointsContext";
 
 async function bootstrap() {
   await msalInstance.initialize();
@@ -19,9 +20,11 @@ async function bootstrap() {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <AuthProvider>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
+            <PointsProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </PointsProvider>
           </AuthProvider>
         </ThemeProvider>
       </MsalProvider>
