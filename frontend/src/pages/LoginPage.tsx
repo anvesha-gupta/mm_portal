@@ -1,29 +1,27 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import useAuth from "../auth/useAuth";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
-const APP_ENV = (import.meta.env.VITE_APP_ENV || "local").toLowerCase();
+import useAuth from "../auth/useAuth";
 
 export default function LoginPage() {
   const { login, loading: authLoading, user } = useAuth();
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [role, setRole] = useState("employee");
 
   const fromPath =
     (location.state as { from?: { pathname?: string } })?.from?.pathname ||
@@ -32,45 +30,38 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      const destination = fromPath === "/login" ? "/dashboard" : fromPath;
+      const destination =
+        fromPath === "/login"
+          ? "/dashboard"
+          : fromPath;
+
       sessionStorage.removeItem("loginRedirectPath");
-      navigate(destination, { replace: true });
+
+      navigate(destination, {
+        replace: true,
+      });
     }
   }, [user, authLoading, fromPath, navigate]);
 
   const handleMicrosoftLogin = async () => {
-    const redirectPath =
-      (location.state as { from?: { pathname?: string } })?.from?.pathname ||
-      "/dashboard";
-
-    sessionStorage.setItem("loginRedirectPath", redirectPath);
-    try {
-      await login();
-    } catch (err: any) {
-      setError(err.message || "Microsoft authentication failed");
-    }
-  };
-
-  const handleLocalLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError("Please enter both username and password");
-      return;
-    }
-
     setError("");
-    setLocalLoading(true);
 
     try {
-      await login(username.trim(), password.trim());
+      // Step 2:
+      // Later this will call the backend with the selected role.
+      console.log("Selected role:", role);
+
+      await login(role);
     } catch (err: any) {
-      setError(err.message || "Invalid credentials or server error");
-    } finally {
-      setLocalLoading(false);
+        console.error(err);
+
+        setError(
+           err?.message ||
+           JSON.stringify(err, null, 2) ||
+           "Unable to sign in."
+        );
     }
   };
-
-  const isLocal = APP_ENV === "local";
 
   return (
     <Box
@@ -78,297 +69,257 @@ export default function LoginPage() {
         minHeight: "100vh",
         bgcolor: "#08080F",
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Glow Effects */}
       <Box
         sx={{
           position: "absolute",
-          top: -200,
-          left: -200,
-          width: 600,
-          height: 600,
+          top: -220,
+          left: -220,
+          width: 650,
+          height: 650,
           background:
-            "radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: -150,
-          right: -150,
-          width: 500,
-          height: 500,
-          background:
-            "radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)",
-          pointerEvents: "none",
+            "radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 70%)",
         }}
       />
 
       <Box
         sx={{
-          position: "relative",
+          position: "absolute",
+          bottom: -200,
+          right: -200,
+          width: 550,
+          height: 550,
+          background:
+            "radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 70%)",
+        }}
+      />
+
+      <Box
+        sx={{
+          width: 430,
+          p: 5,
+          borderRadius: 6,
           bgcolor: "rgba(255,255,255,0.04)",
           backdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 6,
-          p: 5,
-          width: 430,
-          textAlign: "center",
+          border: "1px solid rgba(255,255,255,0.10)",
           boxShadow:
             "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.15)",
         }}
       >
-        <Stack alignItems="center" spacing={1} sx={{ mb: 2 }}>
+        <Stack
+          spacing={1}
+          alignItems="center"
+          sx={{ mb: 3 }}
+        >
           <Box
             sx={{
-              width: 48,
-              height: 48,
+              width: 56,
+              height: 56,
               borderRadius: 3,
               background:
-                "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)",
+                "linear-gradient(135deg,#7C3AED,#A855F7)",
               display: "flex",
-              alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 24px rgba(124,58,237,0.5)",
+              alignItems: "center",
             }}
           >
-            <Typography sx={{ color: "#fff", fontSize: 22, fontWeight: 700 }}>
+            <Typography
+              sx={{
+                color: "white",
+                fontWeight: 700,
+                fontSize: 22,
+              }}
+            >
               MM
             </Typography>
           </Box>
-          <Box sx={{ textAlign: "center" }}>
-            <Typography
-              sx={{
-                fontSize: 24,
-                fontWeight: 800,
-                letterSpacing: "-0.5px",
-                color: "#fff",
+
+          <Typography
+            sx={{
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: 26,
+            }}
+          >
+            Motive
+            <span
+              style={{
+                background:
+                  "linear-gradient(135deg,#7C3AED,#A855F7)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
               }}
             >
-              Motive
-              <span
-                style={{
-                  background:
-                    "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Minds
-              </span>
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: 10,
-                color: "#C084FC",
-                fontWeight: 500,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                mt: 0.5,
-              }}
-            >
-              Intelligence Simplified
-            </Typography>
-          </Box>
+              Minds
+            </span>
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "#C084FC",
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+            }}
+          >
+            Intelligence Simplified
+          </Typography>
         </Stack>
 
         <Typography
+          align="center"
           sx={{
-            fontSize: 13,
-            color: "rgba(255,255,255,0.7)",
-            fontStyle: "italic",
+            color: "rgba(255,255,255,0.65)",
             mb: 4,
           }}
         >
-          Employee Hub · Internal Portal ({isLocal ? "Local Dev" : "Prod"})
+          Select your role to continue
         </Typography>
 
         {error && (
           <Alert
             severity="error"
-            variant="outlined"
-            sx={{
-              mb: 3,
-              textAlign: "left",
-              color: "#f44336",
-              borderColor: "rgba(244, 67, 54, 0.3)",
-              bgcolor: "rgba(244, 67, 54, 0.05)",
-            }}
+            sx={{ mb: 3 }}
           >
             {error}
           </Alert>
-        )}
-
-        {isLocal ? (
-          <Box component="form" onSubmit={handleLocalLogin} autoComplete="off">
-            <Stack spacing={2.5}>
-              <TextField
-                label="Username"
-                variant="outlined"
-                fullWidth
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={localLoading || authLoading}
-                autoComplete="off"
-                InputLabelProps={{ style: { color: "rgba(255,255,255,0.6)" } }}
-                inputProps={{
-                  style: { color: "#fff", backgroundColor: "transparent" },
-                  autoComplete: "off"
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(255,255,255,0.02)",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(124, 58, 237, 0.5)",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#7C3AED",
-                    },
-                  },
-                }}
-              />
-
-              <TextField
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                variant="outlined"
-                fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={localLoading || authLoading}
-                autoComplete="new-password"
-                InputLabelProps={{ style: { color: "rgba(255,255,255,0.6)" } }}
-                inputProps={{
-                  style: { color: "#fff", backgroundColor: "transparent" },
-                  autoComplete: "new-password"
-                }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        sx={{ color: "rgba(255,255,255,0.6)" }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "rgba(255,255,255,0.02)",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.15)" },
-                    "&:hover fieldset": {
-                      borderColor: "rgba(124, 58, 237, 0.5)",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#7C3AED",
-                    },
-                  },
-                }}
-              />
-
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={localLoading || authLoading}
-                sx={{
-                  py: 1.75,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  textTransform: "none",
-                  borderRadius: 2,
-                  background:
-                    "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)",
-                  boxShadow: "0 4px 20px rgba(124,58,237,0.3)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #6D28D9 0%, #9333EA 100%)",
-                  },
-                }}
-              >
-                {localLoading ? "Logging in..." : "Sign In"}
-              </Button>
-            </Stack>
-
-            <Typography
-              sx={{
-                fontSize: 12,
-                color: "rgba(255,255,255,0.5)",
-                mt: 3,
-                borderTop: "1px solid rgba(255,255,255,0.08)",
-                pt: 2.5,
-              }}
-            >
-              Demo: Sign in with <strong>admin</strong> and password <strong>abc</strong>
-            </Typography>
-          </Box>
-        ) : (
-          <Box>
-            <Button
-              onClick={handleMicrosoftLogin}
-              disabled={authLoading}
-              variant="contained"
-              fullWidth
-              sx={{
-                py: 1.75,
-                gap: 1.5,
-                borderRadius: 2,
-                backgroundColor: "#fff",
-                color: "#1a1a2e",
-                fontWeight: 700,
-                textTransform: "none",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.9)",
-                },
-              }}
-            >
-              Sign in with Microsoft
-            </Button>
-            <Typography
-              sx={{ fontSize: 12, color: "rgba(255,255,255,0.6)", mt: 2 }}
-            >
-              Sign in with corporate Azure Active Directory using your Microsoft
-              account.
-            </Typography>
-          </Box>
-        )}
-
-        <Typography
-          sx={{ fontSize: 10, color: "rgba(255,255,255,0.45)", mt: 4 }}
-        >
-          Azure AD · SAML 2.0 / OAuth 2.0 · SOC 2 Type II
-        </Typography>
-        <Typography
+        )}       
+         <FormControl
+          fullWidth
           sx={{
-            fontSize: 10,
-            color: "rgba(255,255,255,0.45)",
-            mt: 1,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.5,
+            mb: 4,
           }}
         >
-          <Box
+          <InputLabel
             sx={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: "#10B981",
+              color: "rgba(255,255,255,0.65)",
+              "&.Mui-focused": {
+                color: "#A855F7",
+              },
             }}
-          />
-          Secure SSO · All access keys server-side only
+          >
+            Select Role
+          </InputLabel>
+
+          <Select
+            value={role}
+            label="Select Role"
+            onChange={(e) => setRole(e.target.value)}
+            sx={{
+              color: "white",
+              borderRadius: 3,
+
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.18)",
+              },
+
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#A855F7",
+              },
+
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#A855F7",
+              },
+
+              "& .MuiSvgIcon-root": {
+                color: "white",
+              },
+            }}
+
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  bgcolor: "#181825",
+                  color: "white",
+                },
+              },
+            }}
+          >
+            <MenuItem value="employee">
+              Standard Employee
+            </MenuItem>
+
+            <MenuItem value="finance">
+              Finance
+            </MenuItem>
+
+            <MenuItem value="hr">
+              Human Resources (HR)
+            </MenuItem>
+
+            <MenuItem value="admin">
+              IT Administrator
+            </MenuItem>
+          </Select>
+        </FormControl>
+
+        <Button
+          variant="contained"
+          fullWidth
+          size="large"
+          disabled={authLoading}
+          onClick={handleMicrosoftLogin}
+          sx={{
+            height: 56,
+            borderRadius: 3,
+            textTransform: "none",
+            fontWeight: 700,
+            fontSize: 16,
+            background:
+              "linear-gradient(135deg,#7C3AED,#A855F7)",
+
+            boxShadow:
+              "0 12px 30px rgba(124,58,237,0.35)",
+
+            transition: "0.25s",
+
+            "&:hover": {
+              transform: "translateY(-2px)",
+              background:
+                "linear-gradient(135deg,#6D28D9,#9333EA)",
+            },
+
+            "&:disabled": {
+              background: "#666",
+              color: "#DDD",
+            },
+          }}
+        >
+          {authLoading
+            ? "Signing In..."
+            : "Sign in with Microsoft"}
+        </Button>
+
+        <Typography
+          align="center"
+          sx={{
+            mt: 4,
+            color: "rgba(255,255,255,0.55)",
+            fontSize: 13,
+            lineHeight: 1.7,
+          }}
+        >
+          This is a demonstration login.
+          <br />
+          Choose your portal role before signing in.
         </Typography>
+
+        <Typography
+          align="center"
+          sx={{
+            mt: 4,
+            color: "rgba(255,255,255,0.35)",
+            fontSize: 11,
+          }}
+        >
+          © {new Date().getFullYear()} MotiveMinds
+        </Typography>
+
       </Box>
     </Box>
   );

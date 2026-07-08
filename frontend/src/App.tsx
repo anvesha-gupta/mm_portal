@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import AppLayout from "./layout/AppLayout";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import RoleGuard from "./auth/RoleGuard";
+
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import PlaybenchPage from "./pages/PlaybenchPage";
@@ -30,43 +33,217 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/playbench" element={<PlaybenchPage />} />
-          <Route path="/apps" element={<AppsPage />} />
+          <Route
+            path="/"
+            element={<Navigate to="/dashboard" replace />}
+          />
 
-          {/* Feature 5.1 */}
-          <Route path="/mindscript" element={<MindscriptPage />} />
-          <Route path="/resolve-iq" element={<ResolveIQPage />} />
+          {/* ===================================================== */}
+          {/* ALL LOGGED IN USERS */}
+          {/* ===================================================== */}
 
-          {/* New internal systems */}
-          <Route path="/wyngs" element={<WyngsPage />} />
-          <Route path="/estimatrix" element={<EstimatrixPage />} />
-          <Route path="/myra" element={<MyRAPage />} />
+          <Route
+            path="/dashboard"
+            element={<DashboardPage />}
+          />
 
-          {/* Feature 5.2 */}
+          <Route
+            path="/apps"
+            element={<AppsPage />}
+          />
+
+          <Route
+            path="/profile"
+            element={<ProfilePage />}
+          />
+
+          <Route
+            path="/settings"
+            element={<SettingsPage />}
+          />
+
+          <Route
+            path="/home"
+            element={<HomePage />}
+          />
+
+          <Route
+            path="/swag"
+            element={<SwagPage />}
+          />
+
+          <Route
+            path="/leaderboard"
+            element={<LeaderboardPage />}
+          />
+
+          {/* ===================================================== */}
+          {/* EMPLOYEE + HR + FINANCE + ADMIN */}
+          {/* ===================================================== */}
+
+          <Route
+            path="/wyngs"
+            element={
+              <RoleGuard
+                roles={[
+                  "employee",
+                  "finance",
+                  "hr",
+                  "admin",
+                ]}
+              >
+                <WyngsPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/playbench"
+            element={
+              <RoleGuard
+                roles={[
+                  "employee",
+                  "finance",
+                  "hr",
+                  "admin",
+                ]}
+              >
+                <PlaybenchPage />
+              </RoleGuard>
+            }
+          />
+
+          {/* ===================================================== */}
+          {/* EMPLOYEE ONLY APPS */}
+          {/* ===================================================== */}
+
+          <Route
+            path="/mindscript"
+            element={
+              <RoleGuard
+                roles={[
+                  "employee",
+                  "admin",
+                ]}
+              >
+                <MindscriptPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/resolve-iq"
+            element={
+              <RoleGuard
+                roles={[
+                  "employee",
+                  "admin",
+                ]}
+              >
+                <ResolveIQPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/myra"
+            element={
+              <RoleGuard
+                roles={[
+                  "employee",
+                  "admin",
+                ]}
+              >
+                <MyRAPage />
+              </RoleGuard>
+            }
+          />
+
+          {/* ===================================================== */}
+          {/* FINANCE */}
+          {/* ===================================================== */}
+
           <Route
             path="/expense-management"
-            element={<ExpenseManagementPage />}
+            element={
+              <RoleGuard
+                roles={[
+                  "finance",
+                  "admin",
+                ]}
+              >
+                <ExpenseManagementPage />
+              </RoleGuard>
+            }
           />
+
+          <Route
+            path="/estimatrix"
+            element={
+              <RoleGuard
+                roles={[
+                  "finance",
+                  "admin",
+                ]}
+              >
+                <EstimatrixPage />
+              </RoleGuard>
+            }
+          />
+
+          {/* ===================================================== */}
+          {/* HR */}
+          {/* ===================================================== */}
+
           <Route
             path="/knowledge-management"
-            element={<KnowledgeManagementPage />}
+            element={
+              <RoleGuard
+                roles={[
+                  "hr",
+                ]}
+              >
+                <KnowledgeManagementPage />
+              </RoleGuard>
+            }
           />
+
           <Route
             path="/idea-tracking"
-            element={<IdeaTrackingPage />}
+            element={
+              <RoleGuard
+                roles={[
+                  "hr",
+                ]}
+              >
+                <IdeaTrackingPage />
+              </RoleGuard>
+            }
           />
 
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/swag" element={<SwagPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/home" element={<HomePage />} />
+          {/* ===================================================== */}
+          {/* ADMIN */}
+          {/* ===================================================== */}
 
-          <Route path="*" element={<NotFoundPage />} />
+          <Route
+            path="/admin"
+            element={
+              <RoleGuard
+                roles={[
+                  "admin",
+                ]}
+              >
+                <AdminPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="*"
+            element={<NotFoundPage />}
+          />
+
         </Route>
       </Route>
     </Routes>
