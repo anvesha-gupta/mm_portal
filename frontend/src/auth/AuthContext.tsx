@@ -19,6 +19,10 @@ export interface AuthContextType {
   login: (role: string) => Promise<void>;
 
   logout: () => Promise<void>;
+
+  hasPermission: (appId: string) => boolean;
+
+  refreshPermissions: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

@@ -29,6 +29,11 @@ import IdeaTrackingPage from "./pages/IdeaTrackingPage";
 function App() {
   return (
     <Routes>
+
+      {/* ===================================================== */}
+      {/* LOGIN */}
+      {/* ===================================================== */}
+
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
@@ -40,7 +45,7 @@ function App() {
           />
 
           {/* ===================================================== */}
-          {/* ALL LOGGED IN USERS */}
+          {/* AVAILABLE TO EVERY LOGGED-IN USER */}
           {/* ===================================================== */}
 
           <Route
@@ -73,27 +78,15 @@ function App() {
             element={<SwagPage />}
           />
 
+          {/* ===================================================== */}
+          {/* PERMISSION PROTECTED ROUTES */}
+          {/* ===================================================== */}
+
           <Route
             path="/leaderboard"
-            element={<LeaderboardPage />}
-          />
-
-          {/* ===================================================== */}
-          {/* EMPLOYEE + HR + FINANCE + ADMIN */}
-          {/* ===================================================== */}
-
-          <Route
-            path="/wyngs"
             element={
-              <RoleGuard
-                roles={[
-                  "employee",
-                  "finance",
-                  "hr",
-                  "admin",
-                ]}
-              >
-                <WyngsPage />
+              <RoleGuard appId="leaderboard">
+                <LeaderboardPage />
               </RoleGuard>
             }
           />
@@ -101,32 +94,25 @@ function App() {
           <Route
             path="/playbench"
             element={
-              <RoleGuard
-                roles={[
-                  "employee",
-                  "finance",
-                  "hr",
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="playbench">
                 <PlaybenchPage />
               </RoleGuard>
             }
           />
 
-          {/* ===================================================== */}
-          {/* EMPLOYEE ONLY APPS */}
-          {/* ===================================================== */}
+          <Route
+            path="/wyngs"
+            element={
+              <RoleGuard appId="wyngs">
+                <WyngsPage />
+              </RoleGuard>
+            }
+          />
 
           <Route
             path="/mindscript"
             element={
-              <RoleGuard
-                roles={[
-                  "employee",
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="mindscript">
                 <MindscriptPage />
               </RoleGuard>
             }
@@ -135,12 +121,7 @@ function App() {
           <Route
             path="/resolve-iq"
             element={
-              <RoleGuard
-                roles={[
-                  "employee",
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="resolve-iq">
                 <ResolveIQPage />
               </RoleGuard>
             }
@@ -149,30 +130,16 @@ function App() {
           <Route
             path="/myra"
             element={
-              <RoleGuard
-                roles={[
-                  "employee",
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="myra">
                 <MyRAPage />
               </RoleGuard>
             }
           />
 
-          {/* ===================================================== */}
-          {/* FINANCE */}
-          {/* ===================================================== */}
-
           <Route
             path="/expense-management"
             element={
-              <RoleGuard
-                roles={[
-                  "finance",
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="expense-management">
                 <ExpenseManagementPage />
               </RoleGuard>
             }
@@ -181,29 +148,16 @@ function App() {
           <Route
             path="/estimatrix"
             element={
-              <RoleGuard
-                roles={[
-                  "finance",
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="estimatrix">
                 <EstimatrixPage />
               </RoleGuard>
             }
           />
 
-          {/* ===================================================== */}
-          {/* HR */}
-          {/* ===================================================== */}
-
           <Route
             path="/knowledge-management"
             element={
-              <RoleGuard
-                roles={[
-                  "hr",
-                ]}
-              >
+              <RoleGuard appId="knowledge-management">
                 <KnowledgeManagementPage />
               </RoleGuard>
             }
@@ -212,32 +166,24 @@ function App() {
           <Route
             path="/idea-tracking"
             element={
-              <RoleGuard
-                roles={[
-                  "hr",
-                ]}
-              >
+              <RoleGuard appId="idea-tracking">
                 <IdeaTrackingPage />
               </RoleGuard>
             }
           />
 
-          {/* ===================================================== */}
-          {/* ADMIN */}
-          {/* ===================================================== */}
-
           <Route
             path="/admin"
             element={
-              <RoleGuard
-                roles={[
-                  "admin",
-                ]}
-              >
+              <RoleGuard appId="admin">
                 <AdminPage />
               </RoleGuard>
             }
           />
+
+          {/* ===================================================== */}
+          {/* 404 */}
+          {/* ===================================================== */}
 
           <Route
             path="*"
@@ -246,6 +192,7 @@ function App() {
 
         </Route>
       </Route>
+
     </Routes>
   );
 }

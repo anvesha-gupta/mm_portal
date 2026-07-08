@@ -3,14 +3,14 @@ import useAuth from "./useAuth";
 
 interface Props {
   children: JSX.Element;
-  roles: string[];
+  appId: string;
 }
 
 export default function RoleGuard({
   children,
-  roles,
+  appId,
 }: Props) {
-  const { user, loading } = useAuth();
+  const { user, loading, hasPermission } = useAuth();
 
   const location = useLocation();
 
@@ -30,7 +30,7 @@ export default function RoleGuard({
     );
   }
 
-  if (!roles.includes(user.role)) {
+  if (!hasPermission(appId)) {
     return (
       <Navigate
         to="/dashboard"

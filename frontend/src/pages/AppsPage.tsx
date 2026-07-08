@@ -184,17 +184,10 @@ export const appItems: AppItem[] = [  {
   },
 ];
 function AppsPage() {
-  const { user } = useAuth();
-
-  const role =
-    (user?.role as
-      | "employee"
-      | "finance"
-      | "hr"
-      | "admin") ?? "employee";
+  const { hasPermission } = useAuth();
 
   const visibleApps = appItems.filter((app) =>
-    app.allowedRoles.includes(role)
+    hasPermission(app.id)
   );
 
   return (
