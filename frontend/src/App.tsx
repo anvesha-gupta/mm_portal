@@ -173,17 +173,9 @@ function App() {
             }
           />
 
-<<<<<<< HEAD
           <Route path="/future" element={<FutureSystemsPage />} />
           <Route path="/future-systems" element={<FutureSystemsPage />} />
 
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/swag" element={<SwagPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/home" element={<HomePage />} />
-=======
           <Route
             path="/admin"
             element={
@@ -201,7 +193,6 @@ function App() {
             path="*"
             element={<NotFoundPage />}
           />
->>>>>>> 19f7015d0c9e76e953864cc2312ecf5d7cfe72b6
 
         </Route>
       </Route>
