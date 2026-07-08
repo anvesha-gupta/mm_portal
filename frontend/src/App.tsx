@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import AppLayout from "./layout/AppLayout";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import RoleGuard from "./auth/RoleGuard";
+
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import PlaybenchPage from "./pages/PlaybenchPage";
@@ -27,39 +30,150 @@ import FutureSystemsPage from "./pages/FutureSystemsPage";
 function App() {
   return (
     <Routes>
+
+      {/* ===================================================== */}
+      {/* LOGIN */}
+      {/* ===================================================== */}
+
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/playbench" element={<PlaybenchPage />} />
-          <Route path="/apps" element={<AppsPage />} />
+          <Route
+            path="/"
+            element={<Navigate to="/dashboard" replace />}
+          />
 
-          {/* Feature 5.1 */}
-          <Route path="/mindscript" element={<MindscriptPage />} />
-          <Route path="/resolve-iq" element={<ResolveIQPage />} />
+          {/* ===================================================== */}
+          {/* AVAILABLE TO EVERY LOGGED-IN USER */}
+          {/* ===================================================== */}
 
-          {/* New internal systems */}
-          <Route path="/wyngs" element={<WyngsPage />} />
-          <Route path="/estimatrix" element={<EstimatrixPage />} />
-          <Route path="/myra" element={<MyRAPage />} />
+          <Route
+            path="/dashboard"
+            element={<DashboardPage />}
+          />
 
-          {/* Feature 5.2 */}
+          <Route
+            path="/apps"
+            element={<AppsPage />}
+          />
+
+          <Route
+            path="/profile"
+            element={<ProfilePage />}
+          />
+
+          <Route
+            path="/settings"
+            element={<SettingsPage />}
+          />
+
+          <Route
+            path="/home"
+            element={<HomePage />}
+          />
+
+          <Route
+            path="/swag"
+            element={<SwagPage />}
+          />
+
+          {/* ===================================================== */}
+          {/* PERMISSION PROTECTED ROUTES */}
+          {/* ===================================================== */}
+
+          <Route
+            path="/leaderboard"
+            element={
+              <RoleGuard appId="leaderboard">
+                <LeaderboardPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/playbench"
+            element={
+              <RoleGuard appId="playbench">
+                <PlaybenchPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/wyngs"
+            element={
+              <RoleGuard appId="wyngs">
+                <WyngsPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/mindscript"
+            element={
+              <RoleGuard appId="mindscript">
+                <MindscriptPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/resolve-iq"
+            element={
+              <RoleGuard appId="resolve-iq">
+                <ResolveIQPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/myra"
+            element={
+              <RoleGuard appId="myra">
+                <MyRAPage />
+              </RoleGuard>
+            }
+          />
+
           <Route
             path="/expense-management"
-            element={<ExpenseManagementPage />}
-          />
-          <Route
-            path="/knowledge-management"
-            element={<KnowledgeManagementPage />}
-          />
-          <Route
-            path="/idea-tracking"
-            element={<IdeaTrackingPage />}
+            element={
+              <RoleGuard appId="expense-management">
+                <ExpenseManagementPage />
+              </RoleGuard>
+            }
           />
 
+          <Route
+            path="/estimatrix"
+            element={
+              <RoleGuard appId="estimatrix">
+                <EstimatrixPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/knowledge-management"
+            element={
+              <RoleGuard appId="knowledge-management">
+                <KnowledgeManagementPage />
+              </RoleGuard>
+            }
+          />
+
+          <Route
+            path="/idea-tracking"
+            element={
+              <RoleGuard appId="idea-tracking">
+                <IdeaTrackingPage />
+              </RoleGuard>
+            }
+          />
+
+<<<<<<< HEAD
           <Route path="/future" element={<FutureSystemsPage />} />
           <Route path="/future-systems" element={<FutureSystemsPage />} />
 
@@ -69,10 +183,29 @@ function App() {
           <Route path="/swag" element={<SwagPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/home" element={<HomePage />} />
+=======
+          <Route
+            path="/admin"
+            element={
+              <RoleGuard appId="admin">
+                <AdminPage />
+              </RoleGuard>
+            }
+          />
 
-          <Route path="*" element={<NotFoundPage />} />
+          {/* ===================================================== */}
+          {/* 404 */}
+          {/* ===================================================== */}
+
+          <Route
+            path="*"
+            element={<NotFoundPage />}
+          />
+>>>>>>> 19f7015d0c9e76e953864cc2312ecf5d7cfe72b6
+
         </Route>
       </Route>
+
     </Routes>
   );
 }
