@@ -13,14 +13,45 @@ import MenuItem from "@mui/material/MenuItem";
 
 import useAuth from "../auth/useAuth";
 
+function BgTriangles() {
+  return (
+    <svg
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+      }}
+      preserveAspectRatio="xMidYMid slice"
+      viewBox="0 0 1440 900"
+    >
+      <polygon points="0,0 380,0 0,380" fill="rgba(124,58,237,0.05)" />
+      <polygon points="1440,0 1060,0 1440,380" fill="rgba(168,85,247,0.05)" />
+      <polygon points="0,900 360,900 0,540" fill="rgba(168,85,247,0.04)" />
+      <polygon points="1440,900 1080,900 1440,540" fill="rgba(124,58,237,0.04)" />
+      <polygon points="720,120 920,480 520,480" fill="rgba(124,58,237,0.025)" />
+    </svg>
+  );
+}
+
+function MicrosoftIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 21 21" style={{ display: "block" }}>
+      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const { login, loading: authLoading, user } = useAuth();
-
   const navigate = useNavigate();
   const location = useLocation();
 
   const [error, setError] = useState("");
-
   const [role, setRole] = useState("employee");
 
   const fromPath =
@@ -30,36 +61,18 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      const destination =
-        fromPath === "/login"
-          ? "/dashboard"
-          : fromPath;
-
+      const destination = fromPath === "/login" ? "/dashboard" : fromPath;
       sessionStorage.removeItem("loginRedirectPath");
-
-      navigate(destination, {
-        replace: true,
-      });
+      navigate(destination, { replace: true });
     }
   }, [user, authLoading, fromPath, navigate]);
 
   const handleMicrosoftLogin = async () => {
     setError("");
-
     try {
-      // Step 2:
-      // Later this will call the backend with the selected role.
-      console.log("Selected role:", role);
-
       await login(role);
     } catch (err: any) {
-        console.error(err);
-
-        setError(
-           err?.message ||
-           JSON.stringify(err, null, 2) ||
-           "Unable to sign in."
-        );
+      setError(err?.message || JSON.stringify(err, null, 2) || "Unable to sign in.");
     }
   };
 
@@ -67,7 +80,7 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#08080F",
+        bgcolor: "#06060E",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -75,251 +88,254 @@ export default function LoginPage() {
         overflow: "hidden",
       }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: -220,
-          left: -220,
-          width: 650,
-          height: 650,
-          background:
-            "radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 70%)",
-        }}
-      />
+      {/* Ambient glows */}
+      <Box sx={{ position: "absolute", top: -240, left: -240, width: 720, height: 720, background: "radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 65%)", pointerEvents: "none" }} />
+      <Box sx={{ position: "absolute", bottom: -220, right: -220, width: 640, height: 640, background: "radial-gradient(circle, rgba(168,85,247,0.16) 0%, transparent 65%)", pointerEvents: "none" }} />
+      <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 1000, height: 700, background: "radial-gradient(ellipse, rgba(124,58,237,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: -200,
-          right: -200,
-          width: 550,
-          height: 550,
-          background:
-            "radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 70%)",
-        }}
-      />
+      <BgTriangles />
 
+      {/* Card */}
       <Box
         sx={{
-          width: 430,
-          p: 5,
-          borderRadius: 6,
-          bgcolor: "rgba(255,255,255,0.04)",
-          backdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.10)",
+          position: "relative",
+          width: 460,
+          borderRadius: "20px",
+          overflow: "hidden",
+          bgcolor: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(36px)",
+          border: "1px solid rgba(255,255,255,0.09)",
           boxShadow:
-            "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.15)",
+            "0 48px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(124,58,237,0.22), inset 0 1px 0 rgba(255,255,255,0.07)",
         }}
       >
-        <Stack
-          spacing={1}
-          alignItems="center"
-          sx={{ mb: 3 }}
-        >
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 3,
-              background:
-                "linear-gradient(135deg,#7C3AED,#A855F7)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+        {/* Top gradient accent bar */}
+        <Box
+          sx={{
+            height: 3,
+            background: "linear-gradient(90deg, #5B21B6 0%, #7C3AED 30%, #A855F7 70%, #7C3AED 100%)",
+          }}
+        />
+
+        {/* Main body */}
+        <Box sx={{ px: "44px", pt: "40px", pb: "32px" }}>
+
+          {/* Branding block */}
+          <Stack alignItems="center" spacing={1.5} sx={{ mb: "36px" }}>
+            <Box
+              component="img"
+              src="/mm_logo.jpg"
+              alt="MotiveMinds"
+              sx={{ width: 80, height: 80, borderRadius: "14px", display: "block" }}
+            />
+
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                sx={{
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: 30,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.15,
+                }}
+              >
+                Motive
+                <Box
+                  component="span"
+                  sx={{
+                    background: "linear-gradient(135deg, #7C3AED 0%, #C084FC 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  Minds
+                </Box>
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.38)",
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  mt: "4px",
+                }}
+              >
+                Consulting Pvt Ltd
+              </Typography>
+            </Box>
+
+            {/* Tagline with flanking lines */}
+            <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mt: "4px" }}>
+              <Box sx={{ width: 36, height: "1px", bgcolor: "rgba(255,255,255,0.1)" }} />
+              <Typography
+                sx={{
+                  color: "#A855F7",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Intelligence Simplified
+              </Typography>
+              <Box sx={{ width: 36, height: "1px", bgcolor: "rgba(255,255,255,0.1)" }} />
+            </Stack>
+          </Stack>
+
+          {/* Form heading */}
+          <Typography
+            align="center"
+            sx={{ color: "rgba(255,255,255,0.5)", fontSize: 13, mb: "24px" }}
           >
-            <Typography
+            Select your portal role to continue
+          </Typography>
+
+          {/* Error */}
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                mb: 3,
+                borderRadius: 2,
+                bgcolor: "rgba(239,68,68,0.08)",
+                color: "#FCA5A5",
+                border: "1px solid rgba(239,68,68,0.2)",
+                "& .MuiAlert-icon": { color: "#F87171" },
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          {/* Role selector */}
+          <FormControl fullWidth sx={{ mb: "20px" }}>
+            <InputLabel
+              sx={{
+                color: "rgba(255,255,255,0.45)",
+                "&.Mui-focused": { color: "#A855F7" },
+              }}
+            >
+              Portal Role
+            </InputLabel>
+            <Select
+              value={role}
+              label="Portal Role"
+              onChange={(e) => setRole(e.target.value)}
               sx={{
                 color: "white",
-                fontWeight: 700,
-                fontSize: 22,
-              }}
-            >
-              MM
-            </Typography>
-          </Box>
-
-          <Typography
-            sx={{
-              color: "#fff",
-              fontWeight: 800,
-              fontSize: 26,
-            }}
-          >
-            Motive
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg,#7C3AED,#A855F7)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Minds
-            </span>
-          </Typography>
-
-          <Typography
-            sx={{
-              color: "#C084FC",
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-            }}
-          >
-            Intelligence Simplified
-          </Typography>
-        </Stack>
-
-        <Typography
-          align="center"
-          sx={{
-            color: "rgba(255,255,255,0.65)",
-            mb: 4,
-          }}
-        >
-          Select your role to continue
-        </Typography>
-
-        {error && (
-          <Alert
-            severity="error"
-            sx={{ mb: 3 }}
-          >
-            {error}
-          </Alert>
-        )}       
-         <FormControl
-          fullWidth
-          sx={{
-            mb: 4,
-          }}
-        >
-          <InputLabel
-            sx={{
-              color: "rgba(255,255,255,0.65)",
-              "&.Mui-focused": {
-                color: "#A855F7",
-              },
-            }}
-          >
-            Select Role
-          </InputLabel>
-
-          <Select
-            value={role}
-            label="Select Role"
-            onChange={(e) => setRole(e.target.value)}
-            sx={{
-              color: "white",
-              borderRadius: 3,
-
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.18)",
-              },
-
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#A855F7",
-              },
-
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#A855F7",
-              },
-
-              "& .MuiSvgIcon-root": {
-                color: "white",
-              },
-            }}
-
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  bgcolor: "#181825",
-                  color: "white",
+                borderRadius: "10px",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.11)",
                 },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(124,58,237,0.55)",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#7C3AED",
+                  borderWidth: "1.5px",
+                },
+                "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.45)" },
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    bgcolor: "#0F0F1C",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "10px",
+                    color: "white",
+                    mt: 0.5,
+                    "& .MuiMenuItem-root": {
+                      fontSize: 14,
+                      py: 1.25,
+                    },
+                    "& .MuiMenuItem-root:hover": {
+                      bgcolor: "rgba(124,58,237,0.14)",
+                    },
+                    "& .MuiMenuItem-root.Mui-selected": {
+                      bgcolor: "rgba(124,58,237,0.22)",
+                    },
+                  },
+                },
+              }}
+            >
+              <MenuItem value="employee">Standard Employee</MenuItem>
+              <MenuItem value="finance">Finance</MenuItem>
+              <MenuItem value="hr">Human Resources (HR)</MenuItem>
+              <MenuItem value="admin">IT Administrator</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Sign-in button */}
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            disabled={authLoading}
+            onClick={handleMicrosoftLogin}
+            startIcon={!authLoading ? <MicrosoftIcon /> : undefined}
+            sx={{
+              height: 52,
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: 15,
+              letterSpacing: "0.01em",
+              background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)",
+              boxShadow: "0 8px 28px rgba(124,58,237,0.42)",
+              transition: "all 0.22s ease",
+              "&:hover": {
+                transform: "translateY(-1px)",
+                boxShadow: "0 14px 36px rgba(124,58,237,0.54)",
+                background: "linear-gradient(135deg, #6D28D9 0%, #9333EA 100%)",
+              },
+              "&:active": { transform: "translateY(0)" },
+              "&:disabled": {
+                background: "rgba(255,255,255,0.07)",
+                color: "rgba(255,255,255,0.28)",
+                boxShadow: "none",
               },
             }}
           >
-            <MenuItem value="employee">
-              Standard Employee
-            </MenuItem>
+            {authLoading ? "Signing In…" : "Continue with Microsoft"}
+          </Button>
 
-            <MenuItem value="finance">
-              Finance
-            </MenuItem>
+          {/* Trust badge */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={0.75}
+            sx={{ mt: "20px" }}
+          >
+            <Box
+              component="svg"
+              viewBox="0 0 24 24"
+              sx={{ width: 13, height: 13, fill: "rgba(255,255,255,0.28)", flexShrink: 0 }}
+            >
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14-3-3 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 6z" />
+            </Box>
+            <Typography sx={{ color: "rgba(255,255,255,0.28)", fontSize: 11.5 }}>
+              Secured with Microsoft Identity Platform
+            </Typography>
+          </Stack>
+        </Box>
 
-            <MenuItem value="hr">
-              Human Resources (HR)
-            </MenuItem>
-
-            <MenuItem value="admin">
-              IT Administrator
-            </MenuItem>
-          </Select>
-        </FormControl>
-
-        <Button
-          variant="contained"
-          fullWidth
-          size="large"
-          disabled={authLoading}
-          onClick={handleMicrosoftLogin}
+        {/* Footer bar */}
+        <Box
           sx={{
-            height: 56,
-            borderRadius: 3,
-            textTransform: "none",
-            fontWeight: 700,
-            fontSize: 16,
-            background:
-              "linear-gradient(135deg,#7C3AED,#A855F7)",
-
-            boxShadow:
-              "0 12px 30px rgba(124,58,237,0.35)",
-
-            transition: "0.25s",
-
-            "&:hover": {
-              transform: "translateY(-2px)",
-              background:
-                "linear-gradient(135deg,#6D28D9,#9333EA)",
-            },
-
-            "&:disabled": {
-              background: "#666",
-              color: "#DDD",
-            },
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            bgcolor: "rgba(0,0,0,0.25)",
+            px: "44px",
+            py: "14px",
+            textAlign: "center",
           }}
         >
-          {authLoading
-            ? "Signing In..."
-            : "Sign in with Microsoft"}
-        </Button>
-
-        <Typography
-          align="center"
-          sx={{
-            mt: 4,
-            color: "rgba(255,255,255,0.55)",
-            fontSize: 13,
-            lineHeight: 1.7,
-          }}
-        >
-          This is a demonstration login.
-          <br />
-          Choose your portal role before signing in.
-        </Typography>
-
-        <Typography
-          align="center"
-          sx={{
-            mt: 4,
-            color: "rgba(255,255,255,0.35)",
-            fontSize: 11,
-          }}
-        >
-          © {new Date().getFullYear()} MotiveMinds
-        </Typography>
-
+          <Typography sx={{ color: "rgba(255,255,255,0.2)", fontSize: 11 }}>
+            © {new Date().getFullYear()} MotiveMinds Consulting Pvt Ltd. All rights reserved.
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
