@@ -8,11 +8,15 @@ import AppCard from '../components/AppCard';
 import { appItems } from './AppsPage';
 import api from '../services/api';
 import { usePoints } from '../context/PointsContext';
+import useAuth from '../auth/useAuth';
 
 function DashboardPage() {
   const [tokenSummary, setTokenSummary] = useState({ assigned: 0, used: 0, remaining: 0 });
   const [loadingTokens, setLoadingTokens] = useState(true);
   const { balance, orders } = usePoints();
+  const { hasPermission } = useAuth();
+
+  const visibleApps = appItems.filter((app) => hasPermission(app.id));
 
   useEffect(() => {
     async function loadStats() {
@@ -56,7 +60,7 @@ function DashboardPage() {
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {stats.map((stat) => {
-          const displayValue = stat.label === 'Apps Available' ? appItems.length.toString() : stat.value;
+          const displayValue = stat.label === 'Apps Available' ? visibleApps.length.toString() : stat.value;
           return (
             <Grid item xs={12} sm={6} md={3} key={stat.label}>
               <Card sx={{ bgcolor: '#12121F', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
@@ -76,7 +80,7 @@ function DashboardPage() {
       <Box>
         <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)', mb: 1 }}>Your Applications</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(162px, 1fr))', gap: 1.5 }}>
-          {appItems.map((app) => (
+          {visibleApps.map((app) => (
             <AppCard
               key={app.title}
               id={app.id}
