@@ -18,6 +18,8 @@ from services.prompt_templates import build_playbench_prompt
 
 router = APIRouter(prefix="/playbench", tags=["Playbench LLM"])
 
+DEFAULT_ASSIGNED_TOKENS = 10_000
+
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -29,18 +31,47 @@ class SessionRenameRequest(BaseModel):
     title: str
 
 
+def _ensure_user_assignments(user_id: str, db: Session) -> None:
+    """Auto-create model assignments for users who have none yet."""
+    existing = db.execute(
+        text("SELECT 1 FROM public.employee_assignments WHERE employee_id = :uid AND active = true LIMIT 1"),
+        {"uid": user_id},
+    ).first()
+    if existing:
+        return
+
+    active_models = db.execute(
+        text("SELECT id FROM mm_portal.llm_models WHERE is_active = true"),
+    ).mappings().all()
+
+    for m in active_models:
+        db.execute(
+            text(
+                """
+                INSERT INTO public.employee_assignments
+                    (employee_id, llm_id, assigned_tokens, used_tokens, remaining_tokens, active)
+                VALUES (:uid, :llm_id, :tokens, 0, :tokens, true)
+                ON CONFLICT (employee_id, llm_id) DO NOTHING
+                """
+            ),
+            {"uid": user_id, "llm_id": m["id"], "tokens": DEFAULT_ASSIGNED_TOKENS},
+        )
+    db.commit()
+
+
 @router.get("/models")
 def list_allowed_models(user=Depends(get_current_user_dep), db: Session = Depends(get_db)):
     user_id = str(user.id)
+    _ensure_user_assignments(user_id, db)
     result = db.execute(
         text(
             """
-            SELECT 
-                e.llm_id, 
-                m.display_name, 
-                m.provider, 
-                e.assigned_tokens, 
-                e.used_tokens, 
+            SELECT
+                e.llm_id,
+                m.display_name,
+                m.provider,
+                e.assigned_tokens,
+                e.used_tokens,
                 e.remaining_tokens,
                 c.model_name
             FROM public.employee_assignments e
@@ -52,13 +83,14 @@ def list_allowed_models(user=Depends(get_current_user_dep), db: Session = Depend
         ),
         {"user_id": user_id},
     ).mappings().all()
-    
+
     return {"models": [dict(row) for row in result]}
 
 
 @router.get("/token-summary")
 def get_token_summary(user=Depends(get_current_user_dep), db: Session = Depends(get_db)):
     user_id = str(user.id)
+    _ensure_user_assignments(user_id, db)
     result = db.execute(
         text(
             """
@@ -82,6 +114,7 @@ def chat_stream(
     db: Session = Depends(get_db),
 ):
     user_id = str(user.id)
+    _ensure_user_assignments(user_id, db)
 
     # Check database assignments for this model
     assignment = db.execute(
