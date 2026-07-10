@@ -15,14 +15,9 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 
 import PageHeader from "../components/PageHeader";
 import useAuth from "../auth/useAuth";
-import { accessService } from "../services/accessService";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type HistoryItem = {
   employee: string;
@@ -37,9 +32,7 @@ type LeaderboardEntry = {
   isCurrentUser?: boolean;
 };
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const HISTORY_KEY    = "mm_points_history";
+const HISTORY_KEY = "mm_points_history";
 const LEADERBOARD_KEY = "mm_leaderboard";
 
 const EMPLOYEES = [
@@ -48,8 +41,6 @@ const EMPLOYEES = [
   { value: "john",  label: "John Doe"     },
 ];
 
-// Maps each leaderboard employee to the demo-login email so HR-awarded
-// points are written to the same localStorage key PointsContext reads.
 const EMPLOYEE_BALANCE_KEYS: Record<string, string> = {
   rahul: "mm_points_balance_employee@motiveminds.local",
   jane:  "mm_points_balance_finance@motiveminds.local",
@@ -69,8 +60,6 @@ const DEFAULT_HISTORY: HistoryItem[] = [
   { employee: "John Doe",     change: "+500", reason: "Innovation Bonus",      date: "22 Jul" },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const s = localStorage.getItem(key);
@@ -80,8 +69,6 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const isHR = user?.role === "hr";
@@ -89,98 +76,20 @@ export default function LeaderboardPage() {
 
   const [tab, setTab] = useState(0);
 
-<<<<<<< HEAD
-  // States for awarding points
-  const [targetEmployeeId, setTargetEmployeeId] = useState("");
-  const [pointsToAward, setPointsToAward] = useState("");
-  const [awardReason, setAwardReason] = useState("");
-
-  // Feedback states
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
-
-  const handleAwardPoints = async () => {
-    if (!targetEmployeeId.trim()) {
-      setToastMsg("Please enter an Employee ID.");
-      setToastSeverity("error");
-      setToastOpen(true);
-      return;
-    }
-    if (!pointsToAward.trim() || isNaN(Number(pointsToAward)) || Number(pointsToAward) <= 0) {
-      setToastMsg("Please enter a valid positive number for points.");
-      setToastSeverity("error");
-      setToastOpen(true);
-      return;
-    }
-    if (!awardReason.trim()) {
-      setToastMsg("Please enter a reason.");
-      setToastSeverity("error");
-      setToastOpen(true);
-      return;
-    }
-
-    try {
-      const emp = await accessService.getUserByEmployeeId(targetEmployeeId);
-      if (!emp) {
-        setToastMsg(`Employee with ID "${targetEmployeeId}" not found.`);
-        setToastSeverity("error");
-        setToastOpen(true);
-        return;
-      }
-
-      setToastMsg(`Successfully awarded ${pointsToAward} points to ${emp.display_name} (${emp.id}).`);
-      setToastSeverity("success");
-      setToastOpen(true);
-
-      // Reset form
-      setTargetEmployeeId("");
-      setPointsToAward("");
-      setAwardReason("");
-    } catch (err) {
-      console.error(err);
-      setToastMsg("Failed to award points.");
-      setToastSeverity("error");
-      setToastOpen(true);
-    }
-  };
-
-  const leaderboard = [
-    {
-      name: "Rahul Sharma",
-      points: 7250,
-    },
-    {
-      name: "Jane Smith",
-      points: 6840,
-    },
-    {
-      name: "John Doe",
-      points: 6400,
-    },
-    {
-      name: user?.name ?? "You",
-      points: 5100,
-    },
-  ];
-=======
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() =>
     loadFromStorage(LEADERBOARD_KEY, DEFAULT_LEADERBOARD)
   );
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
 
   const [history, setHistory] = useState<HistoryItem[]>(() =>
     loadFromStorage(HISTORY_KEY, DEFAULT_HISTORY)
   );
 
-  // Award Points form state
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [pointsInput, setPointsInput]           = useState("");
-  const [reason, setReason]                     = useState("");
-  const [successMsg, setSuccessMsg]             = useState("");
-  const [errorMsg, setErrorMsg]                 = useState("");
+  const [pointsInput, setPointsInput] = useState("");
+  const [reason, setReason] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // Persist leaderboard & history to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
   }, [leaderboard]);
@@ -189,7 +98,6 @@ export default function LeaderboardPage() {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }, [history]);
 
-  // Display leaderboard always shows the current user's real name
   const displayLeaderboard = leaderboard
     .map((e) => (e.isCurrentUser ? { ...e, name: currentUserName } : e))
     .sort((a, b) => b.points - a.points);
@@ -203,26 +111,22 @@ export default function LeaderboardPage() {
       return;
     }
 
-    // Update leaderboard points
     setLeaderboard((prev) =>
       prev.map((e) => (e.name === emp.label ? { ...e, points: e.points + pts } : e))
     );
 
-    // Prepend to history
     const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     setHistory((prev) => [
       { employee: emp.label, change: `+${pts}`, reason: reason.trim(), date: dateStr },
       ...prev,
     ]);
 
-    // Persist to the employee's swag-balance key so PointsContext picks it up on login
     const balanceKey = EMPLOYEE_BALANCE_KEYS[selectedEmployee];
     if (balanceKey) {
       const current = parseInt(localStorage.getItem(balanceKey) ?? "750", 10);
       localStorage.setItem(balanceKey, String(current + pts));
     }
 
-    // Reset form and switch to Leaderboard tab so the update is immediately visible
     setSelectedEmployee("");
     setPointsInput("");
     setReason("");
@@ -230,7 +134,7 @@ export default function LeaderboardPage() {
     setSuccessMsg(`${pts} points awarded to ${emp.label} successfully!`);
     setTimeout(() => {
       setSuccessMsg("");
-      setTab(0); // show leaderboard with updated points
+      setTab(0);
     }, 1500);
   };
 
@@ -253,9 +157,6 @@ export default function LeaderboardPage() {
           {isHR && <Tab label="History" />}
         </Tabs>
 
-        {/* ======================================================= */}
-        {/* LEADERBOARD TAB                                          */}
-        {/* ======================================================= */}
         {tab === 0 && (
           <Box sx={{ p: 3 }}>
             <Typography sx={{ color: "white", fontSize: 22, fontWeight: 700, mb: 3 }}>
@@ -286,9 +187,6 @@ export default function LeaderboardPage() {
           </Box>
         )}
 
-        {/* ======================================================= */}
-        {/* AWARD POINTS TAB (HR ONLY)                              */}
-        {/* ======================================================= */}
         {isHR && tab === 1 && (
           <Box sx={{ p: 3 }}>
             <Typography sx={{ color: "white", fontSize: 22, fontWeight: 700, mb: 3 }}>
@@ -308,25 +206,8 @@ export default function LeaderboardPage() {
 
             <Stack spacing={3} maxWidth={500}>
               <TextField
+                select
                 fullWidth
-<<<<<<< HEAD
-                label="Employee ID (e.g. EMP001)"
-                placeholder="EMP001"
-                value={targetEmployeeId}
-                onChange={(e) => setTargetEmployeeId(e.target.value)}
-                InputLabelProps={{
-                  sx: {
-                    color: "rgba(255,255,255,0.6)",
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    color: "white",
-                    bgcolor: "#1E1E2D",
-                  },
-                }}
-              />
-=======
                 label="Employee"
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
@@ -339,34 +220,17 @@ export default function LeaderboardPage() {
                   </MenuItem>
                 ))}
               </TextField>
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
 
               <TextField
                 fullWidth
                 label="Points"
                 type="number"
                 placeholder="250"
-<<<<<<< HEAD
-                value={pointsToAward}
-                onChange={(e) => setPointsToAward(e.target.value)}
-                InputLabelProps={{
-                  sx: {
-                    color: "rgba(255,255,255,0.6)",
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    color: "white",
-                    bgcolor: "#1E1E2D",
-                  },
-                }}
-=======
                 value={pointsInput}
                 onChange={(e) => setPointsInput(e.target.value)}
                 inputProps={{ min: 1 }}
                 InputLabelProps={{ sx: { color: "rgba(255,255,255,0.6)" } }}
                 sx={{ "& .MuiOutlinedInput-root": { color: "white", bgcolor: "#1E1E2D" } }}
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
               />
 
               <TextField
@@ -375,36 +239,16 @@ export default function LeaderboardPage() {
                 rows={4}
                 label="Reason"
                 placeholder="Excellent customer appreciation..."
-<<<<<<< HEAD
-                value={awardReason}
-                onChange={(e) => setAwardReason(e.target.value)}
-                InputLabelProps={{
-                  sx: {
-                    color: "rgba(255,255,255,0.6)",
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    color: "white",
-                    bgcolor: "#1E1E2D",
-                  },
-                }}
-=======
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 InputLabelProps={{ sx: { color: "rgba(255,255,255,0.6)" } }}
                 sx={{ "& .MuiOutlinedInput-root": { color: "white", bgcolor: "#1E1E2D" } }}
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
               />
 
               <Button
                 variant="contained"
                 size="large"
-<<<<<<< HEAD
-                onClick={handleAwardPoints}
-=======
                 onClick={handleAward}
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
                 sx={{
                   width: 220,
                   height: 50,
@@ -421,9 +265,6 @@ export default function LeaderboardPage() {
           </Box>
         )}
 
-        {/* ======================================================= */}
-        {/* HISTORY TAB (HR ONLY)                                   */}
-        {/* ======================================================= */}
         {isHR && tab === 2 && (
           <Box sx={{ p: 3 }}>
             <Typography sx={{ color: "white", fontSize: 22, fontWeight: 700, mb: 3 }}>
@@ -444,12 +285,7 @@ export default function LeaderboardPage() {
                     <TableRow key={index} hover>
                       <TableCell sx={{ color: "white" }}>{item.date}</TableCell>
                       <TableCell sx={{ color: "white" }}>{item.employee}</TableCell>
-                      <TableCell
-                        sx={{
-                          color: item.change.startsWith("+") ? "#4ADE80" : "#EF4444",
-                          fontWeight: 700,
-                        }}
-                      >
+                      <TableCell sx={{ color: item.change.startsWith("+") ? "#4ADE80" : "#EF4444", fontWeight: 700 }}>
                         {item.change}
                       </TableCell>
                       <TableCell sx={{ color: "white" }}>{item.reason}</TableCell>
@@ -461,21 +297,6 @@ export default function LeaderboardPage() {
           </Box>
         )}
       </Paper>
-
-      <Snackbar
-        open={toastOpen}
-        autoHideDuration={4500}
-        onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          severity={toastSeverity}
-          onClose={() => setToastOpen(false)}
-          sx={{ width: "100%", bgcolor: "#1E1E38", color: "#fff" }}
-        >
-          {toastMsg}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

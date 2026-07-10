@@ -7,18 +7,14 @@ import CardContent from '@mui/material/CardContent';
 import AppCard from '../components/AppCard';
 import { appItems } from './AppsPage';
 import api from '../services/api';
-<<<<<<< HEAD
-=======
 import { usePoints } from '../context/PointsContext';
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
 import useAuth from '../auth/useAuth';
 
 function DashboardPage() {
   const { hasPermission } = useAuth();
+  const { balance, orders } = usePoints();
   const [tokenSummary, setTokenSummary] = useState({ assigned: 0, used: 0, remaining: 0 });
   const [loadingTokens, setLoadingTokens] = useState(true);
-  const { balance, orders } = usePoints();
-  const { hasPermission } = useAuth();
 
   const visibleApps = appItems.filter((app) => hasPermission(app.id));
 
@@ -36,28 +32,21 @@ function DashboardPage() {
     loadStats();
   }, []);
 
-  const visibleApps = appItems.filter((app) => hasPermission(app.id));
-
   const stats = [
     { label: 'Points Balance', value: balance.toString(), delta: '↑ 200 pts this month', color: '#F59E0B' },
-    { 
-      label: 'AI Tokens Today', 
-      value: loadingTokens ? '...' : tokenSummary.used.toLocaleString(), 
-      delta: loadingTokens ? '⚡ loading...' : `⚡ ${tokenSummary.remaining.toLocaleString()} remaining`, 
-      color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' 
+    {
+      label: 'AI Tokens Today',
+      value: loadingTokens ? '...' : tokenSummary.used.toLocaleString(),
+      delta: loadingTokens ? '⚡ loading...' : `⚡ ${tokenSummary.remaining.toLocaleString()} remaining`,
+      color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
     },
-<<<<<<< HEAD
     { label: 'Apps Available', value: visibleApps.length.toString(), delta: 'based on your AD role', color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
-    { label: 'Orders Pending', value: '1', delta: 'Hoodie · in fulfillment', color: '#FFFFFF' },
-=======
-    { label: 'Apps Available', value: '8', delta: 'based on your AD role', color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
     {
       label: 'Orders Pending',
       value: orders.length.toString(),
       delta: orders.length > 0 ? `${orders[orders.length - 1].emoji} ${orders[orders.length - 1].name} · in fulfillment` : 'No pending orders',
       color: '#FFFFFF',
     },
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
   ];
 
   return (
@@ -70,30 +59,19 @@ function DashboardPage() {
       </Box>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {stats.map((stat) => {
-<<<<<<< HEAD
-=======
-          const displayValue = stat.label === 'Apps Available' ? visibleApps.length.toString() : stat.value;
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
-          return (
-            <Grid item xs={12} sm={6} md={3} key={stat.label}>
-              <Card sx={{ bgcolor: '#12121F', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
-                <CardContent>
-                  <Typography sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)', mb: 1 }}>{stat.label}</Typography>
-<<<<<<< HEAD
-                  <Typography sx={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1.5px', background: stat.color, WebkitBackgroundClip: stat.color.includes('gradient') ? 'text' : undefined, WebkitTextFillColor: stat.color.includes('gradient') ? 'transparent' : undefined, color: stat.color.includes('gradient') ? undefined : stat.color }}>
-                    {stat.value}
-=======
-                  <Typography sx={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1.5px', background: stat.color.includes('gradient') ? stat.color : undefined, WebkitBackgroundClip: stat.color.includes('gradient') ? 'text' : undefined, WebkitTextFillColor: stat.color.includes('gradient') ? 'transparent' : undefined, color: stat.color.includes('gradient') ? undefined : stat.color }}>
-                    {displayValue}
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, mt: 0.5, color: stat.label === 'Orders Pending' ? 'rgba(255,255,255,0.45)' : stat.color === '#F59E0B' ? '#10B981' : 'rgba(255,255,255,0.7)' }}>{stat.delta}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
+        {stats.map((stat) => (
+          <Grid item xs={12} sm={6} md={3} key={stat.label}>
+            <Card sx={{ bgcolor: '#12121F', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
+              <CardContent>
+                <Typography sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)', mb: 1 }}>{stat.label}</Typography>
+                <Typography sx={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1.5px', background: stat.color.includes('gradient') ? stat.color : undefined, WebkitBackgroundClip: stat.color.includes('gradient') ? 'text' : undefined, WebkitTextFillColor: stat.color.includes('gradient') ? 'transparent' : undefined, color: stat.color.includes('gradient') ? undefined : stat.color }}>
+                  {stat.value}
+                </Typography>
+                <Typography sx={{ fontSize: 11, mt: 0.5, color: stat.label === 'Orders Pending' ? 'rgba(255,255,255,0.45)' : stat.color === '#F59E0B' ? '#10B981' : 'rgba(255,255,255,0.7)' }}>{stat.delta}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
       <Box>

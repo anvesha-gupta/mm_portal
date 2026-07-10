@@ -52,13 +52,7 @@ export default function LoginPage() {
   const location = useLocation();
 
   const [error, setError] = useState("");
-<<<<<<< HEAD
-  const [signingIn, setSigningIn] = useState(false);
-
-  const [role, setRole] = useState("");
-=======
   const [role, setRole] = useState("employee");
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
 
   const fromPath =
     (location.state as { from?: { pathname?: string } })?.from?.pathname ||
@@ -75,40 +69,10 @@ export default function LoginPage() {
 
   const handleMicrosoftLogin = async () => {
     setError("");
-<<<<<<< HEAD
-
-    if (!role) {
-      setError("Please select a role before signing in.");
-      return;
-    }
-
-    if (signingIn) {
-      return;
-    }
-
-    setSigningIn(true);
-
-    try {
-      await login(role);
-    } catch (err: unknown) {
-      console.error(err);
-
-      const message =
-        err instanceof Error
-          ? err.message
-          : typeof err === "string"
-            ? err
-            : "Unable to sign in.";
-
-      setError(message);
-    } finally {
-      setSigningIn(false);
-=======
     try {
       await login(role);
     } catch (err: any) {
       setError(err?.message || JSON.stringify(err, null, 2) || "Unable to sign in.");
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
     }
   };
 
@@ -261,95 +225,6 @@ export default function LoginPage() {
               onChange={(e) => setRole(e.target.value)}
               sx={{
                 color: "white",
-<<<<<<< HEAD
-                fontWeight: 700,
-                fontSize: 22,
-              }}
-            >
-              MM
-            </Typography>
-          </Box>
-
-          <Typography
-            sx={{
-              color: "#fff",
-              fontWeight: 800,
-              fontSize: 26,
-            }}
-          >
-            Motive
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg,#7C3AED,#A855F7)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Minds
-            </span>
-          </Typography>
-
-          <Typography
-            sx={{
-              color: "#C084FC",
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
-            }}
-          >
-            Intelligence Simplified
-          </Typography>
-        </Stack>
-
-        <Typography
-          align="center"
-          sx={{
-            color: "rgba(255,255,255,0.65)",
-            mb: 4,
-          }}
-        >
-          Select your role to continue
-        </Typography>
-
-        {error && (
-          <Alert
-            severity="error"
-            sx={{ mb: 3 }}
-          >
-            {error}
-          </Alert>
-        )}       
-         <FormControl
-          fullWidth
-          sx={{
-            mb: 4,
-          }}
-        >
-          <InputLabel
-            sx={{
-              color: "rgba(255,255,255,0.65)",
-              "&.Mui-focused": {
-                color: "#A855F7",
-              },
-            }}
-          >
-            Select Role
-          </InputLabel>
-
-          <Select
-             value={role}
-             label="Select Role"
-             onChange={(e) => setRole(e.target.value)}
-          >
-            <MenuItem value="">
-              <em>Select your role</em>
-            </MenuItem>
-
-            <MenuItem value="employee">
-              Standard Employee
-            </MenuItem>
-=======
                 borderRadius: "10px",
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: "rgba(255,255,255,0.11)",
@@ -425,7 +300,6 @@ export default function LoginPage() {
           >
             {authLoading ? "Signing In…" : "Continue with Microsoft"}
           </Button>
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
 
           {/* Trust badge */}
           <Stack
@@ -448,28 +322,8 @@ export default function LoginPage() {
           </Stack>
         </Box>
 
-<<<<<<< HEAD
-            <MenuItem value="hr">
-              Human Resources (HR)
-            </MenuItem>
-
-            <MenuItem value="admin">
-              IT Administrator
-            </MenuItem>
-          </Select>
-
-        </FormControl>
-
-        <Button
-          variant="contained"
-          fullWidth
-          size="large"
-          disabled={authLoading || signingIn}
-          onClick={handleMicrosoftLogin}
-=======
         {/* Footer bar */}
         <Box
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
           sx={{
             borderTop: "1px solid rgba(255,255,255,0.06)",
             bgcolor: "rgba(0,0,0,0.25)",
@@ -478,43 +332,10 @@ export default function LoginPage() {
             textAlign: "center",
           }}
         >
-<<<<<<< HEAD
-          {authLoading || signingIn
-            ? "Signing In..."
-            : "Sign in with Microsoft"}
-        </Button>
-
-        <Typography
-          align="center"
-          sx={{
-            mt: 4,
-            color: "rgba(255,255,255,0.55)",
-            fontSize: 13,
-            lineHeight: 1.7,
-          }}
-        >
-          This is a demonstration login.
-          <br />
-          Choose your portal role before signing in.
-        </Typography>
-
-        <Typography
-          align="center"
-          sx={{
-            mt: 4,
-            color: "rgba(255,255,255,0.35)",
-            fontSize: 11,
-          }}
-        >
-          © {new Date().getFullYear()} MotiveMinds
-        </Typography>
-
-=======
           <Typography sx={{ color: "rgba(255,255,255,0.2)", fontSize: 11 }}>
             © {new Date().getFullYear()} MotiveMinds Consulting Pvt Ltd. All rights reserved.
           </Typography>
         </Box>
->>>>>>> 79c14097037e99f2b4f2adb2f3bde93dcd0000cf
       </Box>
     </Box>
   );
