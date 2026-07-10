@@ -143,13 +143,16 @@ export default function LeaderboardPage() {
       localStorage.setItem(balanceKey, String(current + pts));
     }
 
-    // Reset form
+    // Reset form and switch to Leaderboard tab so the update is immediately visible
     setSelectedEmployee("");
     setPointsInput("");
     setReason("");
     setErrorMsg("");
     setSuccessMsg(`${pts} points awarded to ${emp.label} successfully!`);
-    setTimeout(() => setSuccessMsg(""), 3500);
+    setTimeout(() => {
+      setSuccessMsg("");
+      setTab(0); // show leaderboard with updated points
+    }, 1500);
   };
 
   return (
