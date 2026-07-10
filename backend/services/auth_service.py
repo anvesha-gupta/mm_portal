@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
-from uuid import uuid4
+from uuid import uuid5, UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -35,7 +35,9 @@ class AuthService:
                 detail="Invalid role selected.",
             )
 
-        user_id = str(uuid4())
+        email = f"{role}@motiveminds.local"
+        # Deterministic UUID so the same role always maps to the same user_id
+        user_id = str(uuid5(UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8"), email))
 
         role_names = {
             "employee": "Standard Employee",
@@ -48,7 +50,7 @@ class AuthService:
             {
                 "sub": user_id,
                 "role": role,
-                "email": f"{role}@motiveminds.local",
+                "email": email,
                 "display_name": role_names[role],
             }
         )
@@ -58,7 +60,7 @@ class AuthService:
             "token_type": "bearer",
             "user": {
                 "id": user_id,
-                "email": f"{role}@motiveminds.local",
+                "email": email,
                 "display_name": role_names[role],
                 "department": role.upper(),
                 "title": role_names[role],

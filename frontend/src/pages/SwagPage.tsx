@@ -10,6 +10,7 @@ import Button from '@mui/material/Button';
 import PageHeader from '../components/PageHeader';
 import SwagCard from '../components/SwagCard';
 import { usePoints } from '../context/PointsContext';
+import api from '../services/api';
 
 const swagItems = [
   { id: 1, emoji: '👕', name: 'MM Classic Tee', description: 'Premium cotton, unisex, embroidered logo', points: 150, category: 'apparel' },
@@ -34,13 +35,17 @@ function SwagPage() {
   const handleOpen = (item: typeof swagItems[number]) => setSelectedItem(item);
   const handleClose = () => setSelectedItem(null);
 
-  const handleConfirm = () => {
-    if (!selectedItem) return;
-    if (balance >= selectedItem.points) {
-      setBalance(balance - selectedItem.points);
-      addOrder({ name: selectedItem.name, emoji: selectedItem.emoji });
-    }
+  const handleConfirm = async () => {
+    if (!selectedItem || balance < selectedItem.points) return;
     handleClose();
+    try {
+      const res = await api.post('/api/user_points/me/deduct', { points: selectedItem.points });
+      setBalance(res.data.balance);
+    } catch {
+      // Backend unavailable — deduct locally so UI stays consistent
+      setBalance(balance - selectedItem.points);
+    }
+    addOrder({ name: selectedItem.name, emoji: selectedItem.emoji });
   };
 
   return (

@@ -156,14 +156,15 @@ const INITIAL_USER_OVERRIDES: UserAppOverrideResponse[] = [
 const ROLE_PERM_KEY = "mm_role_permissions";
 const USER_OVERRIDE_KEY = "mm_user_overrides";
 const USER_KEY = "mm_mock_users";
+const PERM_VERSION_KEY = "mm_perm_version";
+const PERM_VERSION = "3"; // bump when DEFAULT_ROLE_PERMISSIONS changes
 
-// Initialize localStorage if empty
+// Initialize localStorage; reseed role permissions whenever PERM_VERSION changes
 function initializeStorage() {
-  if (!localStorage.getItem(ROLE_PERM_KEY)) {
+  if (localStorage.getItem(PERM_VERSION_KEY) !== PERM_VERSION) {
     localStorage.setItem(ROLE_PERM_KEY, JSON.stringify(DEFAULT_ROLE_PERMISSIONS));
-  }
-  if (!localStorage.getItem(USER_OVERRIDE_KEY)) {
     localStorage.setItem(USER_OVERRIDE_KEY, JSON.stringify(INITIAL_USER_OVERRIDES));
+    localStorage.setItem(PERM_VERSION_KEY, PERM_VERSION);
   }
   if (!localStorage.getItem(USER_KEY)) {
     localStorage.setItem(USER_KEY, JSON.stringify(INITIAL_USERS));

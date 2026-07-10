@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import useAuth from '../auth/useAuth';
+import api from '../services/api';
 
 export interface PendingOrder {
   name: string;
@@ -13,42 +15,63 @@ interface PointsContextValue {
   resetPoints: () => void;
 }
 
-const BALANCE_KEY = 'mm_points_balance';
-const ORDERS_KEY = 'mm_points_orders';
 const DEFAULT_BALANCE = 750;
 
 const PointsContext = createContext<PointsContextValue | null>(null);
 
+// Key by email — always "role@motiveminds.local", stable across logout/login
+const balanceKey = (userKey: string) => `mm_points_balance_${userKey}`;
+const ordersKey  = (userKey: string) => `mm_points_orders_${userKey}`;
+
+const loadBalance = (userKey: string): number => {
+  const stored = localStorage.getItem(balanceKey(userKey));
+  return stored !== null ? Number(stored) : DEFAULT_BALANCE;
+};
+
+const loadOrders = (userKey: string): PendingOrder[] => {
+  try {
+    const stored = localStorage.getItem(ordersKey(userKey));
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+};
+
 export function PointsProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalanceState] = useState<number>(() => {
-    const stored = sessionStorage.getItem(BALANCE_KEY);
-    return stored !== null ? Number(stored) : DEFAULT_BALANCE;
-  });
+  const { user } = useAuth();
+  const userId = user?.email ?? 'guest';
 
-  const [orders, setOrders] = useState<PendingOrder[]>(() => {
-    const stored = sessionStorage.getItem(ORDERS_KEY);
-    try { return stored ? JSON.parse(stored) : []; } catch { return []; }
-  });
+  const [balance, setBalanceState] = useState<number>(() => loadBalance(userId));
+  const [orders, setOrders] = useState<PendingOrder[]>(() => loadOrders(userId));
+
+  // Reload per-user data whenever the logged-in account changes
+  useEffect(() => {
+    setOrders(loadOrders(userId));
+    if (!user) {
+      setBalanceState(DEFAULT_BALANCE);
+      return;
+    }
+    // Try to load from backend; fall back to localStorage if DB is unavailable
+    api.get('/api/user_points/me')
+      .then(res => setBalanceState(res.data.balance))
+      .catch(() => setBalanceState(loadBalance(userId)));
+  }, [userId]);
 
   useEffect(() => {
-    sessionStorage.setItem(BALANCE_KEY, String(balance));
-  }, [balance]);
+    localStorage.setItem(balanceKey(userId), String(balance));
+  }, [balance, userId]);
 
   useEffect(() => {
-    sessionStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-  }, [orders]);
+    localStorage.setItem(ordersKey(userId), JSON.stringify(orders));
+  }, [orders, userId]);
 
   const setBalance = (value: number) => setBalanceState(value);
 
-  const addOrder = (order: PendingOrder) => {
-    setOrders((prev) => [...prev, order]);
-  };
+  const addOrder = (order: PendingOrder) => setOrders(prev => [...prev, order]);
 
   const resetPoints = () => {
     setBalanceState(DEFAULT_BALANCE);
     setOrders([]);
-    sessionStorage.removeItem(BALANCE_KEY);
-    sessionStorage.removeItem(ORDERS_KEY);
+    localStorage.removeItem(balanceKey(userId));
+    localStorage.removeItem(ordersKey(userId));
   };
 
   return (
