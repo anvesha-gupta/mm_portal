@@ -146,7 +146,7 @@ export const appItems: AppItem[] = [  {
     type: "SaaS",
     external: true,
     bg: "rgba(56,189,248,0.15)",
-    url: "https://www.salesforce.com/in/?ir=1",
+    url: "https://motiveminds.my.salesforce.com",
     allowedRoles: ["employee", "finance", "hr", "admin"],
   },
 
@@ -157,7 +157,7 @@ export const appItems: AppItem[] = [  {
     type: "SaaS",
     external: true,
     bg: "rgba(16,185,129,0.18)",
-    url: "https://zohobooks.placeholder.com",
+    url: "https://books.zoho.com",
     allowedRoles: ["finance", "admin"],
   },
 
