@@ -49,9 +49,13 @@ export function PointsProvider({ children }: { children: ReactNode }) {
       setBalanceState(DEFAULT_BALANCE);
       return;
     }
-    // Try to load from backend; fall back to localStorage if DB is unavailable.
-    // Do NOT write to localStorage here on userId change — that would overwrite
-    // the saved balance with the stale in-memory value before the async load completes.
+
+    // Synchronously show the per-user localStorage value RIGHT NOW so the
+    // previous user's stale balance is never visible while the API call is
+    // in-flight (the DB can be unreachable and Axios hangs for seconds).
+    setBalanceState(loadBalance(userId));
+
+    // Then try the backend; if it resolves, use the authoritative DB value.
     api.get('/api/user_points/me')
       .then(res => {
         const dbBalance = res.data.balance;
@@ -59,8 +63,7 @@ export function PointsProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(balanceKey(userId), String(dbBalance));
       })
       .catch(() => {
-        // DB unavailable — read what's in localStorage (safe: not yet overwritten)
-        setBalanceState(loadBalance(userId));
+        // DB unavailable — localStorage value already applied above, nothing to do.
       });
   }, [userId]);
 
@@ -69,7 +72,7 @@ export function PointsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(ordersKey(userId), JSON.stringify(orders));
   }, [orders, userId]);
 
-  // setBalance also writes to localStorage immediately so deductions are never lost
+  // setBalance writes to localStorage immediately so deductions are never lost
   const setBalance = (value: number) => {
     setBalanceState(value);
     localStorage.setItem(balanceKey(userId), String(value));
