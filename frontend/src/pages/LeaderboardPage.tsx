@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Tabs from "@mui/material/Tabs";
@@ -19,10 +19,30 @@ import TableRow from "@mui/material/TableRow";
 import PageHeader from "../components/PageHeader";
 import useAuth from "../auth/useAuth";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type HistoryItem = {
+  employee: string;
+  change: string;
+  reason: string;
+  date: string;
+};
+
+type LeaderboardEntry = {
+  name: string;
+  points: number;
+  isCurrentUser?: boolean;
+};
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const HISTORY_KEY    = "mm_points_history";
+const LEADERBOARD_KEY = "mm_leaderboard";
+
 const EMPLOYEES = [
   { value: "rahul", label: "Rahul Sharma" },
-  { value: "jane", label: "Jane Smith" },
-  { value: "john", label: "John Doe" },
+  { value: "jane",  label: "Jane Smith"   },
+  { value: "john",  label: "John Doe"     },
 ];
 
 // Maps each leaderboard employee to the demo-login email so HR-awarded
@@ -33,31 +53,67 @@ const EMPLOYEE_BALANCE_KEYS: Record<string, string> = {
   john:  "mm_points_balance_admin@motiveminds.local",
 };
 
+const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
+  { name: "Rahul Sharma", points: 7250 },
+  { name: "Jane Smith",   points: 6840 },
+  { name: "John Doe",     points: 6400 },
+  { name: "You",          points: 5100, isCurrentUser: true },
+];
+
+const DEFAULT_HISTORY: HistoryItem[] = [
+  { employee: "Rahul Sharma", change: "+250", reason: "Customer Appreciation", date: "24 Jul" },
+  { employee: "Jane Smith",   change: "-100", reason: "Late Submission",       date: "23 Jul" },
+  { employee: "John Doe",     change: "+500", reason: "Innovation Bonus",      date: "22 Jul" },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const s = localStorage.getItem(key);
+    return s ? (JSON.parse(s) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const isHR = user?.role === "hr";
+  const currentUserName = user?.name ?? "You";
 
   const [tab, setTab] = useState(0);
 
-  const [leaderboard, setLeaderboard] = useState([
-    { name: "Rahul Sharma", points: 7250 },
-    { name: "Jane Smith", points: 6840 },
-    { name: "John Doe", points: 6400 },
-    { name: user?.name ?? "You", points: 5100 },
-  ]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(() =>
+    loadFromStorage(LEADERBOARD_KEY, DEFAULT_LEADERBOARD)
+  );
 
-  const [history, setHistory] = useState([
-    { employee: "Rahul Sharma", change: "+250", reason: "Customer Appreciation", date: "24 Jul" },
-    { employee: "Jane Smith",   change: "-100", reason: "Late Submission",       date: "23 Jul" },
-    { employee: "John Doe",     change: "+500", reason: "Innovation Bonus",      date: "22 Jul" },
-  ]);
+  const [history, setHistory] = useState<HistoryItem[]>(() =>
+    loadFromStorage(HISTORY_KEY, DEFAULT_HISTORY)
+  );
 
   // Award Points form state
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [pointsInput, setPointsInput] = useState("");
-  const [reason, setReason] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [pointsInput, setPointsInput]           = useState("");
+  const [reason, setReason]                     = useState("");
+  const [successMsg, setSuccessMsg]             = useState("");
+  const [errorMsg, setErrorMsg]                 = useState("");
+
+  // Persist leaderboard & history to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+  }, [leaderboard]);
+
+  useEffect(() => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  }, [history]);
+
+  // Display leaderboard always shows the current user's real name
+  const displayLeaderboard = leaderboard
+    .map((e) => (e.isCurrentUser ? { ...e, name: currentUserName } : e))
+    .sort((a, b) => b.points - a.points);
 
   const handleAward = () => {
     const emp = EMPLOYEES.find((e) => e.value === selectedEmployee);
@@ -68,11 +124,9 @@ export default function LeaderboardPage() {
       return;
     }
 
-    // Update leaderboard points and re-sort
+    // Update leaderboard points
     setLeaderboard((prev) =>
-      prev
-        .map((e) => (e.name === emp.label ? { ...e, points: e.points + pts } : e))
-        .sort((a, b) => b.points - a.points)
+      prev.map((e) => (e.name === emp.label ? { ...e, points: e.points + pts } : e))
     );
 
     // Prepend to history
@@ -82,12 +136,11 @@ export default function LeaderboardPage() {
       ...prev,
     ]);
 
-    // Persist to the employee's localStorage balance key so they see the
-    // updated total the next time they log in (PointsContext reads this key).
-    const storageKey = EMPLOYEE_BALANCE_KEYS[selectedEmployee];
-    if (storageKey) {
-      const current = parseInt(localStorage.getItem(storageKey) ?? "750", 10);
-      localStorage.setItem(storageKey, String(current + pts));
+    // Persist to the employee's swag-balance key so PointsContext picks it up on login
+    const balanceKey = EMPLOYEE_BALANCE_KEYS[selectedEmployee];
+    if (balanceKey) {
+      const current = parseInt(localStorage.getItem(balanceKey) ?? "750", 10);
+      localStorage.setItem(balanceKey, String(current + pts));
     }
 
     // Reset form
@@ -136,7 +189,7 @@ export default function LeaderboardPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {leaderboard.map((employee, index) => (
+                  {displayLeaderboard.map((employee, index) => (
                     <TableRow key={employee.name} hover>
                       <TableCell sx={{ color: "white" }}>#{index + 1}</TableCell>
                       <TableCell sx={{ color: "white" }}>{employee.name}</TableCell>
@@ -255,7 +308,12 @@ export default function LeaderboardPage() {
                     <TableRow key={index} hover>
                       <TableCell sx={{ color: "white" }}>{item.date}</TableCell>
                       <TableCell sx={{ color: "white" }}>{item.employee}</TableCell>
-                      <TableCell sx={{ color: item.change.startsWith("+") ? "#4ADE80" : "#EF4444", fontWeight: 700 }}>
+                      <TableCell
+                        sx={{
+                          color: item.change.startsWith("+") ? "#4ADE80" : "#EF4444",
+                          fontWeight: 700,
+                        }}
+                      >
                         {item.change}
                       </TableCell>
                       <TableCell sx={{ color: "white" }}>{item.reason}</TableCell>
