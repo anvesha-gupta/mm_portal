@@ -8,7 +8,7 @@ from typing import Optional
 
 class LoginRequest(BaseModel):
     role: str
-
+    azure_token: str
 
 # =========================================================
 # USER RESPONSE
@@ -38,6 +38,10 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     user: UserResponse
 
+
+# =========================================================
+# TOKEN RESPONSE
+# =========================================================
 
 class TokenResponse(BaseModel):
     access_token: str

@@ -14,9 +14,12 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 import PageHeader from "../components/PageHeader";
 import useAuth from "../auth/useAuth";
+import { accessService } from "../services/accessService";
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
@@ -24,6 +27,61 @@ export default function LeaderboardPage() {
   const isHR = user?.role === "hr";
 
   const [tab, setTab] = useState(0);
+
+  // States for awarding points
+  const [targetEmployeeId, setTargetEmployeeId] = useState("");
+  const [pointsToAward, setPointsToAward] = useState("");
+  const [awardReason, setAwardReason] = useState("");
+
+  // Feedback states
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
+
+  const handleAwardPoints = async () => {
+    if (!targetEmployeeId.trim()) {
+      setToastMsg("Please enter an Employee ID.");
+      setToastSeverity("error");
+      setToastOpen(true);
+      return;
+    }
+    if (!pointsToAward.trim() || isNaN(Number(pointsToAward)) || Number(pointsToAward) <= 0) {
+      setToastMsg("Please enter a valid positive number for points.");
+      setToastSeverity("error");
+      setToastOpen(true);
+      return;
+    }
+    if (!awardReason.trim()) {
+      setToastMsg("Please enter a reason.");
+      setToastSeverity("error");
+      setToastOpen(true);
+      return;
+    }
+
+    try {
+      const emp = await accessService.getUserByEmployeeId(targetEmployeeId);
+      if (!emp) {
+        setToastMsg(`Employee with ID "${targetEmployeeId}" not found.`);
+        setToastSeverity("error");
+        setToastOpen(true);
+        return;
+      }
+
+      setToastMsg(`Successfully awarded ${pointsToAward} points to ${emp.display_name} (${emp.id}).`);
+      setToastSeverity("success");
+      setToastOpen(true);
+
+      // Reset form
+      setTargetEmployeeId("");
+      setPointsToAward("");
+      setAwardReason("");
+    } catch (err) {
+      console.error(err);
+      setToastMsg("Failed to award points.");
+      setToastSeverity("error");
+      setToastOpen(true);
+    }
+  };
 
   const leaderboard = [
     {
@@ -219,10 +277,11 @@ export default function LeaderboardPage() {
             <Stack spacing={3} maxWidth={500}>
 
               <TextField
-                select
                 fullWidth
-                label="Employee"
-                defaultValue=""
+                label="Employee ID (e.g. EMP001)"
+                placeholder="EMP001"
+                value={targetEmployeeId}
+                onChange={(e) => setTargetEmployeeId(e.target.value)}
                 InputLabelProps={{
                   sx: {
                     color: "rgba(255,255,255,0.6)",
@@ -234,26 +293,15 @@ export default function LeaderboardPage() {
                     bgcolor: "#1E1E2D",
                   },
                 }}
-              >
-                <MenuItem value="rahul">
-                  Rahul Sharma
-                </MenuItem>
-
-                <MenuItem value="jane">
-                  Jane Smith
-                </MenuItem>
-
-                <MenuItem value="john">
-                  John Doe
-                </MenuItem>
-
-              </TextField>
+              />
 
               <TextField
                 fullWidth
                 label="Points"
                 type="number"
                 placeholder="250"
+                value={pointsToAward}
+                onChange={(e) => setPointsToAward(e.target.value)}
                 InputLabelProps={{
                   sx: {
                     color: "rgba(255,255,255,0.6)",
@@ -273,6 +321,8 @@ export default function LeaderboardPage() {
                 rows={4}
                 label="Reason"
                 placeholder="Excellent customer appreciation..."
+                value={awardReason}
+                onChange={(e) => setAwardReason(e.target.value)}
                 InputLabelProps={{
                   sx: {
                     color: "rgba(255,255,255,0.6)",
@@ -289,6 +339,7 @@ export default function LeaderboardPage() {
               <Button
                 variant="contained"
                 size="large"
+                onClick={handleAwardPoints}
                 sx={{
                   width: 220,
                   height: 50,
@@ -420,6 +471,21 @@ export default function LeaderboardPage() {
         )}
 
       </Paper>
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={4500}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          severity={toastSeverity}
+          onClose={() => setToastOpen(false)}
+          sx={{ width: "100%", bgcolor: "#1E1E38", color: "#fff" }}
+        >
+          {toastMsg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

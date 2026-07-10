@@ -20,8 +20,9 @@ export default function LoginPage() {
   const location = useLocation();
 
   const [error, setError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
-  const [role, setRole] = useState("employee");
+  const [role, setRole] = useState("");
 
   const fromPath =
     (location.state as { from?: { pathname?: string } })?.from?.pathname ||
@@ -46,20 +47,32 @@ export default function LoginPage() {
   const handleMicrosoftLogin = async () => {
     setError("");
 
+    if (!role) {
+      setError("Please select a role before signing in.");
+      return;
+    }
+
+    if (signingIn) {
+      return;
+    }
+
+    setSigningIn(true);
+
     try {
-      // Step 2:
-      // Later this will call the backend with the selected role.
-      console.log("Selected role:", role);
-
       await login(role);
-    } catch (err: any) {
-        console.error(err);
+    } catch (err: unknown) {
+      console.error(err);
 
-        setError(
-           err?.message ||
-           JSON.stringify(err, null, 2) ||
-           "Unable to sign in."
-        );
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "Unable to sign in.";
+
+      setError(message);
+    } finally {
+      setSigningIn(false);
     }
   };
 
@@ -207,39 +220,14 @@ export default function LoginPage() {
           </InputLabel>
 
           <Select
-            value={role}
-            label="Select Role"
-            onChange={(e) => setRole(e.target.value)}
-            sx={{
-              color: "white",
-              borderRadius: 3,
-
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.18)",
-              },
-
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#A855F7",
-              },
-
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#A855F7",
-              },
-
-              "& .MuiSvgIcon-root": {
-                color: "white",
-              },
-            }}
-
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  bgcolor: "#181825",
-                  color: "white",
-                },
-              },
-            }}
+             value={role}
+             label="Select Role"
+             onChange={(e) => setRole(e.target.value)}
           >
+            <MenuItem value="">
+              <em>Select your role</em>
+            </MenuItem>
+
             <MenuItem value="employee">
               Standard Employee
             </MenuItem>
@@ -256,13 +244,14 @@ export default function LoginPage() {
               IT Administrator
             </MenuItem>
           </Select>
+
         </FormControl>
 
         <Button
           variant="contained"
           fullWidth
           size="large"
-          disabled={authLoading}
+          disabled={authLoading || signingIn}
           onClick={handleMicrosoftLogin}
           sx={{
             height: 56,
@@ -290,7 +279,7 @@ export default function LoginPage() {
             },
           }}
         >
-          {authLoading
+          {authLoading || signingIn
             ? "Signing In..."
             : "Sign in with Microsoft"}
         </Button>

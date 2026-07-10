@@ -37,7 +37,10 @@ def login(
 
     service = AuthService(db)
 
-    result = service.login(payload.role)
+    result = service.login(
+        role = payload.role,
+        azure_token=payload.azure_token,
+        )
 
     return LoginResponse(**result)
 
@@ -95,7 +98,7 @@ def get_me(
 def auth_health():
 
     return {
-        "status": "ok",
+        "status": "ok",     
         "mode": (
             "local"
             if os.getenv("APP_ENV", "local").lower() == "local"

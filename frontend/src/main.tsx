@@ -8,10 +8,10 @@ import { MsalProvider } from "@azure/msal-react";
 import App from "./App";
 import theme from "./theme";
 import { AuthProvider } from "./auth/AuthProvider";
-import { msalInstance } from "./auth/msalInstance";
+import { initializeMsal, msalInstance } from "./auth/msalInstance";
 
 async function bootstrap() {
-  await msalInstance.initialize();
+  await initializeMsal();
 
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>

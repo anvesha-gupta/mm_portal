@@ -7,8 +7,10 @@ import CardContent from '@mui/material/CardContent';
 import AppCard from '../components/AppCard';
 import { appItems } from './AppsPage';
 import api from '../services/api';
+import useAuth from '../auth/useAuth';
 
 function DashboardPage() {
+  const { hasPermission } = useAuth();
   const [tokenSummary, setTokenSummary] = useState({ assigned: 0, used: 0, remaining: 0 });
   const [loadingTokens, setLoadingTokens] = useState(true);
 
@@ -26,6 +28,8 @@ function DashboardPage() {
     loadStats();
   }, []);
 
+  const visibleApps = appItems.filter((app) => hasPermission(app.id));
+
   const stats = [
     { label: 'Points Balance', value: '750', delta: '↑ 200 pts this month', color: '#F59E0B' },
     { 
@@ -34,7 +38,7 @@ function DashboardPage() {
       delta: loadingTokens ? '⚡ loading...' : `⚡ ${tokenSummary.remaining.toLocaleString()} remaining`, 
       color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' 
     },
-    { label: 'Apps Available', value: '8', delta: 'based on your AD role', color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
+    { label: 'Apps Available', value: visibleApps.length.toString(), delta: 'based on your AD role', color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
     { label: 'Orders Pending', value: '1', delta: 'Hoodie · in fulfillment', color: '#FFFFFF' },
   ];
 
@@ -49,14 +53,13 @@ function DashboardPage() {
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {stats.map((stat) => {
-          const displayValue = stat.label === 'Apps Available' ? appItems.length.toString() : stat.value;
           return (
             <Grid item xs={12} sm={6} md={3} key={stat.label}>
               <Card sx={{ bgcolor: '#12121F', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
                 <CardContent>
                   <Typography sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)', mb: 1 }}>{stat.label}</Typography>
                   <Typography sx={{ fontSize: 28, fontWeight: 900, letterSpacing: '-1.5px', background: stat.color, WebkitBackgroundClip: stat.color.includes('gradient') ? 'text' : undefined, WebkitTextFillColor: stat.color.includes('gradient') ? 'transparent' : undefined, color: stat.color.includes('gradient') ? undefined : stat.color }}>
-                    {displayValue}
+                    {stat.value}
                   </Typography>
                   <Typography sx={{ fontSize: 11, mt: 0.5, color: stat.label === 'Orders Pending' ? 'rgba(255,255,255,0.45)' : stat.color === '#F59E0B' ? '#10B981' : 'rgba(255,255,255,0.7)' }}>{stat.delta}</Typography>
                 </CardContent>
@@ -69,7 +72,7 @@ function DashboardPage() {
       <Box>
         <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.42)', mb: 1 }}>Your Applications</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(162px, 1fr))', gap: 1.5 }}>
-          {appItems.map((app) => (
+          {visibleApps.map((app) => (
             <AppCard
               key={app.title}
               id={app.id}

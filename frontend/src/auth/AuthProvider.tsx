@@ -1,5 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AuthContext, { User } from "./AuthContext";
+import {
+  initializeMsal,
+  loginWithMicrosoftRedirect,
+  takePendingLoginRole,
+} from "./msalInstance";
 import { accessService, RolePermissionResponse, UserAppOverrideResponse } from "../services/accessService";
 
 const TOKEN_KEY = "mm_auth_token";
@@ -21,16 +26,15 @@ interface Props {
 export function AuthProvider({ children }: Props) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
-  
-  // Permission system states
+  const loginInProgress = useRef(false);
+
   const [rolePermissions, setRolePermissions] = useState<RolePermissionResponse[]>([]);
   const [userOverrides, setUserOverrides] = useState<UserAppOverrideResponse[]>([]);
 
-  // Function to refresh permissions dynamically from storage/database
   async function refreshPermissions(userId?: string, roleId?: string) {
     const targetUserId = userId || user?.id;
     const targetRoleId = roleId || user?.role;
-    
+
     if (!targetUserId || !targetRoleId) {
       setRolePermissions([]);
       setUserOverrides([]);
@@ -49,28 +53,77 @@ export function AuthProvider({ children }: Props) {
     }
   }
 
-  // =====================================================
-  // RESTORE LOGIN
-  // =====================================================
+  /** Exchanges an Azure ID token for an app session by calling the backend. */
+  async function completeBackendLogin(role: string, azureToken: string) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        role,
+        azure_token: azureToken,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        typeof data.detail === "string"
+          ? data.detail
+          : JSON.stringify(data)
+      );
+    }
+
+    sessionStorage.setItem(TOKEN_KEY, data.access_token);
+
+    const [rp, uo] = await Promise.all([
+      accessService.getRolePermissions(),
+      accessService.getUserOverrides(data.user.id),
+    ]);
+
+    setRolePermissions(rp);
+    setUserOverrides(uo);
+
+    setUser({
+      id: data.user.id,
+      name: data.user.display_name,
+      email: data.user.email,
+      role: data.user.role_id,
+    });
+  }
 
   useEffect(() => {
     async function initialize() {
-      const token = sessionStorage.getItem(TOKEN_KEY);
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/auth/me`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        // First: check if this page load is the browser returning from
+        // Microsoft's login redirect.
+        const redirectResponse = await initializeMsal();
+
+        if (redirectResponse?.idToken) {
+          const pendingRole = takePendingLoginRole();
+
+          if (pendingRole) {
+            await completeBackendLogin(pendingRole, redirectResponse.idToken);
+            setLoading(false);
+            return;
           }
-        );
+        }
+
+        // Otherwise: normal restore-from-existing-session path.
+        const token = sessionStorage.getItem(TOKEN_KEY);
+
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Session expired.");
@@ -80,13 +133,11 @@ export function AuthProvider({ children }: Props) {
         const role = me.role_id as UserRole;
         const userId = me.id;
 
-        // Load permissions BEFORE setting user and loading state
-        // to prevent route guard authorization race conditions
         const [rp, uo] = await Promise.all([
           accessService.getRolePermissions(),
           accessService.getUserOverrides(userId),
         ]);
-        
+
         setRolePermissions(rp);
         setUserOverrides(uo);
 
@@ -97,7 +148,7 @@ export function AuthProvider({ children }: Props) {
           role: role,
         });
       } catch (err) {
-        console.error("Restore login failed:", err);
+        console.error("Login/restore failed:", err);
         sessionStorage.removeItem(TOKEN_KEY);
         setUser(null);
       } finally {
@@ -108,78 +159,23 @@ export function AuthProvider({ children }: Props) {
     initialize();
   }, []);
 
-  // =====================================================
-  // LOGIN
-  // =====================================================
-
   async function login(role: string) {
+    if (loginInProgress.current) {
+      return;
+    }
+
+    loginInProgress.current = true;
+
     try {
-      const inputRole = role as UserRole;
-      const response = await fetch(
-        `${API_BASE_URL}/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            role: inputRole,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      console.log("LOGIN RESPONSE:", data);
-
-      if (!response.ok) {
-        throw new Error(
-          typeof data.detail === "string"
-            ? data.detail
-            : JSON.stringify(data, null, 2)
-        );
-      }
-
-      sessionStorage.setItem(
-        TOKEN_KEY,
-        data.access_token
-      );
-
-      const userId = data.user.id;
-      const userRole = data.user.role_id as UserRole;
-
-      // Load permissions for this user before setting the user context
-      const [rp, uo] = await Promise.all([
-        accessService.getRolePermissions(),
-        accessService.getUserOverrides(userId),
-      ]);
-      
-      setRolePermissions(rp);
-      setUserOverrides(uo);
-
-      setUser({
-        id: userId,
-        name: data.user.display_name,
-        email: data.user.email,
-        role: userRole,
-      });
-    } catch (err: any) {
-      console.error("LOGIN ERROR:", err);
-
-      if (err instanceof Error) {
-        throw err;
-      }
-
-      throw new Error(
-        typeof err === "string"
-          ? err
-          : "Unable to sign in."
-      );
+      // This navigates the browser away to Microsoft's login page.
+      // Nothing after this line runs until the app reloads on return.
+      await loginWithMicrosoftRedirect(role);
+    } catch (err) {
+      loginInProgress.current = false;
+      console.error(err);
+      throw err;
     }
   }
-
-  // =====================================================
-  // LOGOUT
-  // =====================================================
 
   async function logout() {
     sessionStorage.removeItem(TOKEN_KEY);
@@ -188,14 +184,9 @@ export function AuthProvider({ children }: Props) {
     setUserOverrides([]);
   }
 
-  // =====================================================
-  // PERMISSION ENGINE: User Override -> Role Permissions
-  // =====================================================
-
   function hasPermission(appId: string): boolean {
     if (!user) return false;
 
-    // 1. User Override Precedence
     const override = userOverrides.find(
       (o) => o.user_id === user.id && o.app_id.toLowerCase() === appId.toLowerCase()
     );
@@ -203,7 +194,6 @@ export function AuthProvider({ children }: Props) {
       return override.override_type === "grant";
     }
 
-    // 2. Role Permissions Precedence
     return rolePermissions.some(
       (rp) =>
         rp.role_id.toLowerCase() === user.role.toLowerCase() &&
