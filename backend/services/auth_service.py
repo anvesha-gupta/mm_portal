@@ -2,12 +2,21 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
-from uuid import uuid5, UUID
 
 from fastapi import HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from core.security import create_access_token, decode_access_token
+
+
+# Maps frontend demo role → DB role_id
+_DB_ROLE_MAP = {
+    "employee": "employee",
+    "finance":  "finance",
+    "hr":       "hr",
+    "admin":    "it_admin",
+}
 
 
 class AuthService:
@@ -20,53 +29,58 @@ class AuthService:
 
     def login(self, role: str) -> dict[str, Any]:
 
-        allowed_roles = {
-            "employee",
-            "finance",
-            "hr",
-            "admin",
-        }
-
         role = role.lower().strip()
 
-        if role not in allowed_roles:
+        if role not in _DB_ROLE_MAP:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid role selected.",
             )
 
-        email = f"{role}@motiveminds.local"
-        # Deterministic UUID so the same role always maps to the same user_id
-        user_id = str(uuid5(UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8"), email))
+        db_role = _DB_ROLE_MAP[role]
 
-        role_names = {
-            "employee": "Standard Employee",
-            "finance": "Finance",
-            "hr": "Human Resources",
-            "admin": "IT Administrator",
-        }
+        # Fetch the real DB user for this role so user_points FK is satisfied
+        row = self.db.execute(
+            text(
+                "SELECT id, email, display_name "
+                "FROM mm_portal.users "
+                "WHERE role_id = :role_id AND is_active = true "
+                "LIMIT 1"
+            ),
+            {"role_id": db_role},
+        ).mappings().first()
+
+        if not row:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No active user found for role '{role}'. Seed the users table first.",
+            )
+
+        user_id     = str(row["id"])
+        email       = row["email"]
+        display_name = row["display_name"]
 
         token = create_access_token(
             {
-                "sub": user_id,
-                "role": role,
-                "email": email,
-                "display_name": role_names[role],
+                "sub":          user_id,
+                "role":         role,          # normalized role for frontend permission checks
+                "email":        email,
+                "display_name": display_name,
             }
         )
 
         return {
             "access_token": token,
-            "token_type": "bearer",
+            "token_type":   "bearer",
             "user": {
-                "id": user_id,
-                "email": email,
-                "display_name": role_names[role],
-                "department": role.upper(),
-                "title": role_names[role],
-                "role_id": role,
-                "role_label": role_names[role],
-                "is_active": True,
+                "id":           user_id,
+                "email":        email,
+                "display_name": display_name,
+                "department":   role.upper(),
+                "title":        display_name,
+                "role_id":      role,
+                "role_label":   display_name,
+                "is_active":    True,
                 "last_login_at": None,
             },
         }
@@ -90,17 +104,17 @@ def get_current_user(db: Session, token: str):
 
         user = DemoUser()
 
-        user.id = payload["sub"]
-        user.email = payload["email"]
+        user.id           = payload["sub"]
+        user.email        = payload["email"]
         user.display_name = payload["display_name"]
 
-        user.department = payload["role"].upper()
-        user.title = payload["display_name"]
+        user.department   = payload["role"].upper()
+        user.title        = payload["display_name"]
 
-        user.role_id = payload["role"]
-        user.role = DemoRole(payload["display_name"])
+        user.role_id      = payload["role"]
+        user.role         = DemoRole(payload["display_name"])
 
-        user.is_active = True
+        user.is_active    = True
         user.last_login_at = datetime.utcnow()
 
         return user
