@@ -39,8 +39,11 @@ function SwagPage() {
     if (!selectedItem || balance < selectedItem.points) return;
     handleClose();
     try {
-      const res = await api.post('/api/user_points/me/deduct', { points: selectedItem.points });
-      setBalance(res.data.balance);
+      const res = await api.post('/api/swag_redemptions/redeem', {
+        swag_item_name: selectedItem.name,
+        points_cost: selectedItem.points,
+      });
+      setBalance(res.data.new_balance);
     } catch {
       // Backend unavailable — deduct locally so UI stays consistent
       setBalance(balance - selectedItem.points);

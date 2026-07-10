@@ -4,7 +4,7 @@ from typing import Any
 from services.swag_services import SwagService
 
 from database import get_db
-from dependencies.auth import require_permission
+from dependencies.auth import require_permission, get_current_user
 from models.user import User
 from services import swag_redemptions as svc
 from schemas import swag_redemptions as schema
@@ -71,26 +71,44 @@ def delete_item(
 # -------------------------------------------------------------------
 
 @router.post("/redeem")
-def validate_redemption(
+def redeem_swag(
     payload: dict,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Validate reward points, deduct balance,
     create redemption record and log transaction.
+    Accepts swag_item_name + points_cost to look up the DB item.
     """
+    from sqlalchemy import text
 
-    user_id = payload.get("user_id")
-    swag_item_id = payload.get("swag_item_id")
+    swag_item_name = payload.get("swag_item_name")
+    points_cost = payload.get("points_cost")
 
-    if not user_id or not swag_item_id:
+    if not swag_item_name or not points_cost:
         raise HTTPException(
             status_code=400,
-            detail="user_id and swag_item_id are required.",
+            detail="swag_item_name and points_cost are required.",
+        )
+
+    # Look up the swag item in the DB by name and cost
+    row = db.execute(
+        text(
+            "SELECT id FROM mm_portal.swag_items "
+            "WHERE name = :name AND points_cost = :cost LIMIT 1"
+        ),
+        {"name": swag_item_name, "cost": points_cost},
+    ).mappings().first()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Swag item '{swag_item_name}' not found in catalogue.",
         )
 
     return SwagService.redeem_item(
         db=db,
-        user_id=user_id,
-        swag_item_id=swag_item_id,
+        user_id=str(current_user.id),
+        swag_item_id=str(row["id"]),
     )

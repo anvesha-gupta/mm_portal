@@ -117,17 +117,19 @@ class SwagService:
             )
 
         # Deduct points from user's balance
-        db.execute(
+        new_balance_row = db.execute(
             text("""
                 UPDATE mm_portal.user_points
                 SET balance = balance - :points
                 WHERE user_id = :user_id
+                RETURNING balance
             """),
             {
                 "points": required_points,
                 "user_id": user_id,
             },
-        )
+        ).mappings().first()
+        new_balance = new_balance_row["balance"] if new_balance_row else None
 
         # Create redemption record
         redemption = db.execute(
@@ -201,4 +203,5 @@ class SwagService:
             "message": "Swag redeemed successfully.",
             "redemption_id": redemption_id,
             "points_spent": required_points,
+            "new_balance": new_balance,
         }
