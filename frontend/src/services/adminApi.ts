@@ -140,14 +140,14 @@ export interface EmployeeAssignmentRow {
   llm_provider?: string;
 }
 
-export const getLlmModels = async () => api.get<LlmModelRow[]>('/llm_models').then((res) => res.data);
-export const createLlmModel = async (payload: Partial<LlmModelRow>) => api.post<LlmModelRow>('/llm_models', payload).then((res) => res.data);
-export const updateLlmModel = async (id: string, payload: Partial<LlmModelRow>) => api.put<LlmModelRow>(`/llm_models/${id}`, payload).then((res) => res.data);
-export const deleteLlmModel = async (id: string) => api.delete<void>(`/llm_models/${id}`).then((res) => res.data);
+export const getLlmModels = async () => api.get<LlmModelRow[]>('/api/llm_models').then((res) => res.data);
+export const createLlmModel = async (payload: Partial<LlmModelRow>) => api.post<LlmModelRow>('/api/llm_models', payload).then((res) => res.data);
+export const updateLlmModel = async (id: string, payload: Partial<LlmModelRow>) => api.put<LlmModelRow>(`/api/llm_models/${id}`, payload).then((res) => res.data);
+export const deleteLlmModel = async (id: string) => api.delete<void>(`/api/llm_models/${id}`).then((res) => res.data);
 
-export const getEmployeeAssignments = async () => api.get<EmployeeAssignmentRow[]>('/employee_assignments').then((res) => res.data);
-export const createEmployeeAssignment = async (payload: Partial<EmployeeAssignmentRow>) => api.post<EmployeeAssignmentRow>('/employee_assignments', payload).then((res) => res.data);
-export const updateEmployeeAssignment = async (employeeId: string, llmId: string, payload: Partial<EmployeeAssignmentRow>) => api.put<EmployeeAssignmentRow>(`/employee_assignments/${employeeId}/${llmId}`, payload).then((res) => res.data);
-export const deleteEmployeeAssignment = async (employeeId: string, llmId: string) => api.delete<void>(`/employee_assignments/${employeeId}/${llmId}`).then((res) => res.data);
-export const resetEmployeeQuotas = async (employeeId?: string, llmId?: string) => api.post<{ message: string }>('/employee_assignments/reset', null, { params: { employee_id: employeeId, llm_id: llmId } }).then((res) => res.data);
+export const getEmployeeAssignments = async () => api.get<EmployeeAssignmentRow[]>('/api/employee_assignments').then((res) => res.data);
+export const createEmployeeAssignment = async (payload: Partial<EmployeeAssignmentRow>) => api.post<EmployeeAssignmentRow>('/api/employee_assignments', payload).then((res) => res.data);
+export const updateEmployeeAssignment = async (employeeId: string, llmId: string, payload: Partial<EmployeeAssignmentRow>) => api.put<EmployeeAssignmentRow>(`/api/employee_assignments/${employeeId}/${llmId}`, payload).then((res) => res.data);
+export const deleteEmployeeAssignment = async (employeeId: string, llmId: string) => api.delete<void>(`/api/employee_assignments/${employeeId}/${llmId}`).then((res) => res.data);
+export const resetEmployeeQuotas = async (employeeId?: string, llmId?: string) => api.post<{ message: string }>('/api/employee_assignments/reset', null, { params: { employee_id: employeeId, llm_id: llmId } }).then((res) => res.data);
 

@@ -32,20 +32,14 @@ class SessionRenameRequest(BaseModel):
 
 
 def _ensure_user_assignments(user_id: str, db: Session) -> None:
-    """Auto-create model assignments for users who have none yet."""
-    existing = db.execute(
-        text("SELECT 1 FROM public.employee_assignments WHERE employee_id = :uid AND active = true LIMIT 1"),
-        {"uid": user_id},
-    ).first()
-    if existing:
-        return
-
+    """Ensure every active LLM model is assigned to the user, seeding missing ones."""
     active_models = db.execute(
         text("SELECT id FROM mm_portal.llm_models WHERE is_active = true"),
     ).mappings().all()
 
+    changed = False
     for m in active_models:
-        db.execute(
+        result = db.execute(
             text(
                 """
                 INSERT INTO public.employee_assignments
@@ -56,7 +50,10 @@ def _ensure_user_assignments(user_id: str, db: Session) -> None:
             ),
             {"uid": user_id, "llm_id": m["id"], "tokens": DEFAULT_ASSIGNED_TOKENS},
         )
-    db.commit()
+        if result.rowcount:
+            changed = True
+    if changed:
+        db.commit()
 
 
 @router.get("/models")
@@ -273,15 +270,21 @@ def get_sessions(user=Depends(get_current_user_dep), db: Session = Depends(get_d
     result = db.execute(
         text(
             """
-            SELECT id, created_at
-            FROM playbench_sessions
-            WHERE user_id = :user_id
-            ORDER BY created_at DESC
+            SELECT ps.id, ps.created_at, ps.user_id,
+                   COALESCE(u.display_name, 'Unknown') AS display_name
+            FROM playbench_sessions ps
+            LEFT JOIN mm_portal.users u ON u.id::text = ps.user_id::text
+            ORDER BY ps.created_at DESC
             """
         ),
-        {"user_id": str(user.id)},
     )
-    return {"sessions": [dict(r) for r in result.mappings().all()]}
+    current_user_id = str(user.id)
+    rows = []
+    for r in result.mappings().all():
+        row = dict(r)
+        row["is_own"] = str(row["user_id"]) == current_user_id
+        rows.append(row)
+    return {"sessions": rows}
 
 
 @router.get("/sessions/{session_id}/messages")

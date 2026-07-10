@@ -28,7 +28,7 @@ function Header() {
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>
-            {user?.name ?? 'Jane Smith'}
+            {user?.name ?? ''}
           </Typography>
           <Button
             onClick={handleLogout}

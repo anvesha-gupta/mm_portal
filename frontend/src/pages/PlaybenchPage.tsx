@@ -40,6 +40,8 @@ interface AllowedModel {
 interface PlaybenchSession {
   id: string;
   created_at: string;
+  display_name: string;
+  is_own: boolean;
 }
 
 interface PlaybenchMessage {
@@ -113,6 +115,12 @@ export default function PlaybenchPage() {
   const currentModel = useMemo(() => {
     return availableModels.find((m) => m.llm_id === selectedModelId) || null;
   }, [availableModels, selectedModelId]);
+
+  const totalTokens = useMemo(() => ({
+    assigned: availableModels.reduce((s, m) => s + m.assigned_tokens, 0),
+    used: availableModels.reduce((s, m) => s + m.used_tokens, 0),
+    remaining: availableModels.reduce((s, m) => s + m.remaining_tokens, 0),
+  }), [availableModels]);
 
   // ---------------------------
   // LOAD SESSION MESSAGES
@@ -296,9 +304,11 @@ export default function PlaybenchPage() {
                   key={s.id}
                   disablePadding
                   secondaryAction={
-                    <IconButton edge="end" onClick={(e) => handleDeleteSession(s.id, e)} sx={{ color: "rgba(255,255,255,0.3)", "&:hover": { color: "#EF4444" } }}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                    s.is_own ? (
+                      <IconButton edge="end" onClick={(e) => handleDeleteSession(s.id, e)} sx={{ color: "rgba(255,255,255,0.3)", "&:hover": { color: "#EF4444" } }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    ) : null
                   }
                   sx={{ mb: 0.5 }}
                 >
@@ -311,17 +321,13 @@ export default function PlaybenchPage() {
                       px: 1.5,
                       color: activeSessionId === s.id ? "#A855F7" : "rgba(255,255,255,0.7)",
                       bgcolor: activeSessionId === s.id ? "rgba(124,58,237,0.08)" : "transparent",
-                      "&.Mui-selected": {
-                        bgcolor: "rgba(124,58,237,0.12)",
-                      },
-                      "&:hover": {
-                        bgcolor: "rgba(255,255,255,0.04)",
-                      },
+                      "&.Mui-selected": { bgcolor: "rgba(124,58,237,0.12)" },
+                      "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
                     }}
                   >
                     <ForumIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
                     <ListItemText
-                      primary={s.id.slice(0, 8)}
+                      primary={s.display_name}
                       secondary={s.created_at ? new Date(s.created_at).toLocaleDateString() : ""}
                       primaryTypographyProps={{ fontSize: 13, fontWeight: activeSessionId === s.id ? 600 : 500 }}
                       secondaryTypographyProps={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}
@@ -339,6 +345,20 @@ export default function PlaybenchPage() {
         
         {/* MODEL SELECTION & TOKEN QUOTA PANEL */}
         <Box sx={{ p: 2, borderBottom: "1px solid rgba(255,255,255,0.08)", bgcolor: "#0A0A12" }}>
+          {/* Total tokens row — matches the Launchpad card */}
+          {!loadingModels && availableModels.length > 0 && (
+            <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2} sx={{ mb: 1.5 }}>
+              <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                Total across all models:
+              </Typography>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, color: totalTokens.remaining > 0 ? "#10B981" : "#EF4444" }}>
+                {totalTokens.remaining.toLocaleString()} remaining
+              </Typography>
+              <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                ({totalTokens.used.toLocaleString()} used of {totalTokens.assigned.toLocaleString()})
+              </Typography>
+            </Stack>
+          )}
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
               {loadingModels ? (

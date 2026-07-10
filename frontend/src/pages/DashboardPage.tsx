@@ -11,7 +11,10 @@ import { usePoints } from '../context/PointsContext';
 import useAuth from '../auth/useAuth';
 
 function DashboardPage() {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
+  const firstName = user?.name?.split(' ')[0] ?? 'there';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const { balance, orders } = usePoints();
   const [tokenSummary, setTokenSummary] = useState({ assigned: 0, used: 0, remaining: 0 });
   const [loadingTokens, setLoadingTokens] = useState(true);
@@ -35,9 +38,9 @@ function DashboardPage() {
   const stats = [
     { label: 'Points Balance', value: balance.toString(), delta: '↑ 200 pts this month', color: '#F59E0B' },
     {
-      label: 'AI Tokens Today',
-      value: loadingTokens ? '...' : tokenSummary.used.toLocaleString(),
-      delta: loadingTokens ? '⚡ loading...' : `⚡ ${tokenSummary.remaining.toLocaleString()} remaining`,
+      label: 'AI Tokens Remaining',
+      value: loadingTokens ? '...' : tokenSummary.remaining.toLocaleString(),
+      delta: loadingTokens ? '⚡ loading...' : `⚡ ${tokenSummary.used.toLocaleString()} used of ${tokenSummary.assigned.toLocaleString()}`,
       color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
     },
     { label: 'Apps Available', value: visibleApps.length.toString(), delta: 'based on your AD role', color: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' },
@@ -53,7 +56,7 @@ function DashboardPage() {
     <Box sx={{ pt: 10, pl: 3, pr: 3, pb: 4, minHeight: '100vh' }}>
       <Box sx={{ mb: 3 }}>
         <Typography sx={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.4px' }}>
-          Good morning, <Box component="span" sx={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Jane</Box>
+          {greeting}, <Box component="span" sx={{ fontStyle: 'italic', background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{firstName}</Box>
         </Typography>
         <Typography sx={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>Your personalised hub — apps, AI tools, and rewards in one place.</Typography>
       </Box>

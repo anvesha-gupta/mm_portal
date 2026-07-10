@@ -138,6 +138,7 @@ class SwagService:
                 (
                     user_id,
                     swag_item_id,
+                    points_per_item,
                     points_spent,
                     status
                 )
@@ -145,14 +146,16 @@ class SwagService:
                 (
                     :user_id,
                     :swag_item_id,
+                    :points_per_item,
                     :points_spent,
-                    'pending'
+                    'Pending'
                 )
                 RETURNING id
             """),
             {
                 "user_id": user_id,
                 "swag_item_id": swag_item_id,
+                "points_per_item": required_points,
                 "points_spent": required_points,
             },
         ).mappings().first()
