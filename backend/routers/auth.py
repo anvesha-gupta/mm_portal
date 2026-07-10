@@ -37,10 +37,7 @@ def login(
 
     service = AuthService(db)
 
-    result = service.login(
-        role = payload.role,
-        azure_token=payload.azure_token,
-        )
+    result = service.login(role=payload.role)
 
     return LoginResponse(**result)
 

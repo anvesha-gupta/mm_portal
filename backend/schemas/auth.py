@@ -8,7 +8,7 @@ from typing import Optional
 
 class LoginRequest(BaseModel):
     role: str
-    azure_token: str
+    azure_token: Optional[str] = None
 
 # =========================================================
 # USER RESPONSE
