@@ -158,7 +158,7 @@ export const appItems: AppItem[] = [  {
     external: true,
     bg: "rgba(16,185,129,0.18)",
     url: "https://zohobooks.placeholder.com",
-    allowedRoles: ["finance"],
+    allowedRoles: ["finance", "admin"],
   },
 
   {

@@ -33,10 +33,10 @@ function AppCard({
       try {
         const { data } = await api.post(`/api/apps/${id}/launch`);
         if (data.launch_type === 'sso' && data.redirect_url) {
-          window.open(data.redirect_url, "_blank", "noopener,noreferrer");
+          window.location.href = data.redirect_url;
           return;
         } else if (data.launch_type === 'external' && data.url) {
-          window.open(data.url, "_blank", "noopener,noreferrer");
+          window.location.href = data.url;
           return;
         } else if (data.launch_type === 'internal' && data.route) {
           navigate(data.route);
@@ -49,7 +49,7 @@ function AppCard({
 
     // Fallback if no id or if the backend request fails
     if (external && url) {
-      window.open(url, "_blank", "noopener,noreferrer");
+      window.location.href = url;
     } else if (link) {
       navigate(link);
     }

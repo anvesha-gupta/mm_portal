@@ -42,6 +42,10 @@ const navItems = [
     label: "Access Management",
     path: "/admin",
   },
+  {
+    label: "Future Systems",
+    path: "/future",
+  },
 ];
 
 const pathPermissionMap: Record<string, string> = {
@@ -60,7 +64,7 @@ function Sidebar() {
   });
 
   const workspaceItems = visibleItems.filter((item) =>
-    ["/dashboard", "/playbench", "/apps"].includes(item.path)
+    ["/dashboard", "/playbench", "/swag", "/apps"].includes(item.path)
   );
 
   const peopleItems = visibleItems.filter((item) =>
@@ -69,6 +73,10 @@ function Sidebar() {
 
   const adminItems = visibleItems.filter((item) =>
     item.path === "/admin"
+  );
+
+  const roadmapItems = visibleItems.filter((item) =>
+    ["/future"].includes(item.path)
   );
 
   return (
@@ -288,6 +296,72 @@ function Sidebar() {
           </NavLink>
         ))}
                 {/* ====================================================== */}
+        {/* ROADMAP */}
+        {/* ====================================================== */}
+
+        {roadmapItems.length > 0 && (
+          <>
+            <Typography
+              sx={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.42)",
+                px: 1,
+                mt: 2,
+                mb: 1,
+              }}
+            >
+              Roadmap
+            </Typography>
+
+            {roadmapItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                style={{ textDecoration: "none" }}
+              >
+                {({ isActive }) => (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      color: isActive
+                        ? "#A855F7"
+                        : "rgba(255,255,255,0.42)",
+                      backgroundColor: isActive
+                        ? "rgba(124,58,237,0.12)"
+                        : "transparent",
+                      fontWeight: isActive ? 600 : 500,
+                      "&:hover": {
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: 0.5,
+                        backgroundColor: "currentColor",
+                        opacity: 0.4,
+                      }}
+                    />
+                    <Typography>{item.label}</Typography>
+                  </Box>
+                )}
+              </NavLink>
+            ))}
+          </>
+        )}
+
+        {/* ====================================================== */}
         {/* ADMIN */}
         {/* ====================================================== */}
 

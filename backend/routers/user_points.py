@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import Any
 
 from database import get_db
-from dependencies.auth import require_permission
+from dependencies.auth import require_permission, get_current_user
 from models.user import User
 from services import user_points as svc
 from schemas import user_points as schema
@@ -17,6 +18,62 @@ def list_items(
     _current_user: User = Depends(require_permission("admin")),
 ):
     return svc.get_all(db)
+
+
+# /me routes must be declared BEFORE /{id} to avoid being swallowed by the wildcard
+
+@router.get("/me")
+def get_my_points(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = db.execute(
+        text("SELECT balance FROM mm_portal.user_points WHERE user_id = :user_id"),
+        {"user_id": current_user.id},
+    ).mappings().first()
+
+    if not result:
+        db.execute(
+            text("INSERT INTO mm_portal.user_points (user_id, balance) VALUES (:user_id, 750)"),
+            {"user_id": current_user.id},
+        )
+        db.commit()
+        return {"balance": 750}
+
+    return {"balance": result["balance"]}
+
+
+@router.post("/me/deduct")
+def deduct_my_points(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    points = payload.get("points")
+    if not isinstance(points, (int, float)) or points <= 0:
+        raise HTTPException(status_code=400, detail="Invalid points amount")
+
+    result = db.execute(
+        text("SELECT balance FROM mm_portal.user_points WHERE user_id = :user_id"),
+        {"user_id": current_user.id},
+    ).mappings().first()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User points record not found")
+
+    if result["balance"] < points:
+        raise HTTPException(status_code=400, detail="Insufficient points")
+
+    updated = db.execute(
+        text(
+            "UPDATE mm_portal.user_points SET balance = balance - :points "
+            "WHERE user_id = :user_id RETURNING balance"
+        ),
+        {"points": points, "user_id": current_user.id},
+    ).mappings().first()
+    db.commit()
+
+    return {"balance": updated["balance"]}
 
 
 @router.get("/{id}")

@@ -25,6 +25,7 @@ import MyRAPage from "./pages/MyRAPage";
 import ExpenseManagementPage from "./pages/ExpenseManagementPage";
 import KnowledgeManagementPage from "./pages/KnowledgeManagementPage";
 import IdeaTrackingPage from "./pages/IdeaTrackingPage";
+import FutureSystemsPage from "./pages/FutureSystemsPage";
 
 function App() {
   return (
@@ -171,6 +172,9 @@ function App() {
               </RoleGuard>
             }
           />
+
+          <Route path="/future" element={<FutureSystemsPage />} />
+          <Route path="/future-systems" element={<FutureSystemsPage />} />
 
           <Route
             path="/admin"
