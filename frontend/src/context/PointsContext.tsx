@@ -49,21 +49,31 @@ export function PointsProvider({ children }: { children: ReactNode }) {
       setBalanceState(DEFAULT_BALANCE);
       return;
     }
-    // Try to load from backend; fall back to localStorage if DB is unavailable
+    // Try to load from backend; fall back to localStorage if DB is unavailable.
+    // Do NOT write to localStorage here on userId change — that would overwrite
+    // the saved balance with the stale in-memory value before the async load completes.
     api.get('/api/user_points/me')
-      .then(res => setBalanceState(res.data.balance))
-      .catch(() => setBalanceState(loadBalance(userId)));
+      .then(res => {
+        const dbBalance = res.data.balance;
+        setBalanceState(dbBalance);
+        localStorage.setItem(balanceKey(userId), String(dbBalance));
+      })
+      .catch(() => {
+        // DB unavailable — read what's in localStorage (safe: not yet overwritten)
+        setBalanceState(loadBalance(userId));
+      });
   }, [userId]);
 
-  useEffect(() => {
-    localStorage.setItem(balanceKey(userId), String(balance));
-  }, [balance, userId]);
-
+  // Persist orders whenever they change (no race condition: setOrders is synchronous)
   useEffect(() => {
     localStorage.setItem(ordersKey(userId), JSON.stringify(orders));
   }, [orders, userId]);
 
-  const setBalance = (value: number) => setBalanceState(value);
+  // setBalance also writes to localStorage immediately so deductions are never lost
+  const setBalance = (value: number) => {
+    setBalanceState(value);
+    localStorage.setItem(balanceKey(userId), String(value));
+  };
 
   const addOrder = (order: PendingOrder) => setOrders(prev => [...prev, order]);
 
