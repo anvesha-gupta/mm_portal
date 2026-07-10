@@ -25,6 +25,14 @@ const EMPLOYEES = [
   { value: "john", label: "John Doe" },
 ];
 
+// Maps each leaderboard employee to the demo-login email so HR-awarded
+// points are written to the same localStorage key PointsContext reads.
+const EMPLOYEE_BALANCE_KEYS: Record<string, string> = {
+  rahul: "mm_points_balance_employee@motiveminds.local",
+  jane:  "mm_points_balance_finance@motiveminds.local",
+  john:  "mm_points_balance_admin@motiveminds.local",
+};
+
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const isHR = user?.role === "hr";
@@ -73,6 +81,14 @@ export default function LeaderboardPage() {
       { employee: emp.label, change: `+${pts}`, reason: reason.trim(), date: dateStr },
       ...prev,
     ]);
+
+    // Persist to the employee's localStorage balance key so they see the
+    // updated total the next time they log in (PointsContext reads this key).
+    const storageKey = EMPLOYEE_BALANCE_KEYS[selectedEmployee];
+    if (storageKey) {
+      const current = parseInt(localStorage.getItem(storageKey) ?? "750", 10);
+      localStorage.setItem(storageKey, String(current + pts));
+    }
 
     // Reset form
     setSelectedEmployee("");
