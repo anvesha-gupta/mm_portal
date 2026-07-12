@@ -18,6 +18,7 @@ import TableRow from "@mui/material/TableRow";
 
 import PageHeader from "../components/PageHeader";
 import useAuth from "../auth/useAuth";
+import api from "../services/api";
 
 type HistoryItem = {
   employee: string;
@@ -35,17 +36,8 @@ type LeaderboardEntry = {
 const HISTORY_KEY = "mm_points_history";
 const LEADERBOARD_KEY = "mm_leaderboard";
 
-const EMPLOYEES = [
-  { value: "rahul", label: "Rahul Sharma" },
-  { value: "jane",  label: "Jane Smith"   },
-  { value: "john",  label: "John Doe"     },
-];
+type DbUser = { id: string; display_name: string; role_id: string };
 
-const EMPLOYEE_BALANCE_KEYS: Record<string, string> = {
-  rahul: "mm_points_balance_employee@motiveminds.local",
-  jane:  "mm_points_balance_finance@motiveminds.local",
-  john:  "mm_points_balance_admin@motiveminds.local",
-};
 
 const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
   { name: "Rahul Sharma", points: 7250 },
@@ -84,11 +76,16 @@ export default function LeaderboardPage() {
     loadFromStorage(HISTORY_KEY, DEFAULT_HISTORY)
   );
 
+  const [dbUsers, setDbUsers] = useState<DbUser[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [pointsInput, setPointsInput] = useState("");
   const [reason, setReason] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    api.get<DbUser[]>("/api/users/directory").then((res) => setDbUsers(res.data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
@@ -102,8 +99,8 @@ export default function LeaderboardPage() {
     .map((e) => (e.isCurrentUser ? { ...e, name: currentUserName } : e))
     .sort((a, b) => b.points - a.points);
 
-  const handleAward = () => {
-    const emp = EMPLOYEES.find((e) => e.value === selectedEmployee);
+  const handleAward = async () => {
+    const emp = dbUsers.find((u) => u.id === selectedEmployee);
     const pts = parseInt(pointsInput, 10);
 
     if (!emp || !pts || pts <= 0 || !reason.trim()) {
@@ -111,31 +108,34 @@ export default function LeaderboardPage() {
       return;
     }
 
-    setLeaderboard((prev) =>
-      prev.map((e) => (e.name === emp.label ? { ...e, points: e.points + pts } : e))
-    );
+    try {
+      await api.post(`/api/user_points/${emp.id}/award`, {
+        points: pts,
+        reason: reason.trim(),
+      });
 
-    const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-    setHistory((prev) => [
-      { employee: emp.label, change: `+${pts}`, reason: reason.trim(), date: dateStr },
-      ...prev,
-    ]);
+      setLeaderboard((prev) =>
+        prev.map((e) => (e.name === emp.display_name ? { ...e, points: e.points + pts } : e))
+      );
 
-    const balanceKey = EMPLOYEE_BALANCE_KEYS[selectedEmployee];
-    if (balanceKey) {
-      const current = parseInt(localStorage.getItem(balanceKey) ?? "750", 10);
-      localStorage.setItem(balanceKey, String(current + pts));
+      const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      setHistory((prev) => [
+        { employee: emp.display_name, change: `+${pts}`, reason: reason.trim(), date: dateStr },
+        ...prev,
+      ]);
+
+      setSelectedEmployee("");
+      setPointsInput("");
+      setReason("");
+      setErrorMsg("");
+      setSuccessMsg(`${pts} points awarded to ${emp.display_name} successfully!`);
+      setTimeout(() => {
+        setSuccessMsg("");
+        setTab(0);
+      }, 1500);
+    } catch {
+      setErrorMsg("Failed to award points. Please try again.");
     }
-
-    setSelectedEmployee("");
-    setPointsInput("");
-    setReason("");
-    setErrorMsg("");
-    setSuccessMsg(`${pts} points awarded to ${emp.label} successfully!`);
-    setTimeout(() => {
-      setSuccessMsg("");
-      setTab(0);
-    }, 1500);
   };
 
   return (
@@ -214,9 +214,9 @@ export default function LeaderboardPage() {
                 InputLabelProps={{ sx: { color: "rgba(255,255,255,0.6)" } }}
                 sx={{ "& .MuiOutlinedInput-root": { color: "white", bgcolor: "#1E1E2D" } }}
               >
-                {EMPLOYEES.map((emp) => (
-                  <MenuItem key={emp.value} value={emp.value}>
-                    {emp.label}
+                {dbUsers.map((u) => (
+                  <MenuItem key={u.id} value={u.id}>
+                    {u.display_name}
                   </MenuItem>
                 ))}
               </TextField>

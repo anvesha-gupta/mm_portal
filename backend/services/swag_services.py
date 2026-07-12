@@ -120,9 +120,12 @@ class SwagService:
         new_balance_row = db.execute(
             text("""
                 UPDATE mm_portal.user_points
-                SET balance = balance - :points
+                SET
+                    balance = balance - :points,
+                    lifetime_redeemed = lifetime_redeemed + :points,
+                    updated_at = NOW()
                 WHERE user_id = :user_id
-                RETURNING balance
+                RETURNING balance, lifetime_redeemed, updated_at
             """),
             {
                 "points": required_points,
@@ -130,6 +133,7 @@ class SwagService:
             },
         ).mappings().first()
         new_balance = new_balance_row["balance"] if new_balance_row else None
+        lifetime_redeemed = new_balance_row["lifetime_redeemed"] if new_balance_row else None
 
         # Create redemption record
         redemption = db.execute(
@@ -207,4 +211,5 @@ class SwagService:
             "redemption_id": redemption_id,
             "points_spent": required_points,
             "new_balance": new_balance,
+            "lifetime_redeemed": lifetime_redeemed,
         }

@@ -76,6 +76,48 @@ def deduct_my_points(
     return {"balance": updated["balance"]}
 
 
+@router.post("/{user_id}/award")
+def award_points(
+    user_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+):
+    points = payload.get("points")
+    reason = payload.get("reason", "HR Award")
+    if not isinstance(points, (int, float)) or points <= 0:
+        raise HTTPException(status_code=400, detail="Invalid points amount")
+
+    # Upsert: create record if missing, otherwise add points
+    result = db.execute(
+        text("""
+            INSERT INTO mm_portal.user_points (user_id, balance)
+            VALUES (:user_id, :points)
+            ON CONFLICT (user_id) DO UPDATE
+                SET balance = mm_portal.user_points.balance + :points
+            RETURNING balance
+        """),
+        {"user_id": user_id, "points": points},
+    ).mappings().first()
+
+    from uuid import uuid4
+    db.execute(
+        text("""
+            INSERT INTO mm_portal.points_transactions
+                (user_id, amount, transaction_type, notes, created_by)
+            VALUES (:user_id, :amount, 'award', :notes, :created_by)
+        """),
+        {
+            "user_id": user_id,
+            "amount": points,
+            "notes": reason,
+            "created_by": str(_current_user.id),
+        },
+    )
+    db.commit()
+    return {"balance": result["balance"], "points_awarded": points}
+
+
 @router.get("/{id}")
 def get_item(
     id: Any,

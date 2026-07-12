@@ -1,14 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import Any
 
 from database import get_db
-from dependencies.auth import require_permission
+from dependencies.auth import require_permission, get_current_user
 from models.user import User
 from services import users as svc
 from schemas import users as schema
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
+
+
+@router.get("/directory")
+def list_users_directory(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+):
+    """Return basic user info (id + name) — accessible to any authenticated user."""
+    rows = db.execute(
+        text("SELECT id, display_name, role_id FROM mm_portal.users WHERE is_active = true ORDER BY display_name")
+    ).mappings().all()
+    return [dict(r) for r in rows]
 
 
 @router.get("/", response_model=list[schema.UserResponse])
