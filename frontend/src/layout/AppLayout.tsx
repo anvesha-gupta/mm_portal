@@ -6,7 +6,7 @@ import { Outlet } from 'react-router-dom';
 
 function AppLayout() {
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#08080F', color: '#fff' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
       <Sidebar />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Header />

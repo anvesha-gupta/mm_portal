@@ -4,80 +4,135 @@ import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
+import { useTheme } from "@mui/material/styles";
 
 import useAuth from "../auth/useAuth";
 
 const navItems = [
-  {
-    label: "Launchpad",
-    path: "/dashboard",
-  },
-  {
-    label: "AI Playbench",
-    path: "/playbench",
-    badge: "New",
-  },
-  {
-    label: "Swag Store",
-    path: "/swag",
-    badge: "750",
-  },
-  {
-    label: "Apps",
-    path: "/apps",
-  },
-  {
-    label: "Track Points",
-    path: "/leaderboard",
-  },
-  {
-    label: "Profile",
-    path: "/profile",
-  },
-  {
-    label: "Settings",
-    path: "/settings",
-  },
-  {
-    label: "Access Management",
-    path: "/admin",
-  },
-  {
-    label: "Future Systems",
-    path: "/future",
-  },
+  { label: "Launchpad",         path: "/dashboard" },
+  { label: "AI Playbench",      path: "/playbench", badge: "New" },
+  { label: "Swag Store",        path: "/swag",      badge: "750" },
+  { label: "Apps",              path: "/apps" },
+  { label: "Track Points",      path: "/leaderboard" },
+  { label: "Profile",           path: "/profile" },
+  { label: "Settings",          path: "/settings" },
+  { label: "Access Management", path: "/admin" },
+  { label: "Future Systems",    path: "/future" },
 ];
 
 const pathPermissionMap: Record<string, string> = {
-  "/playbench": "playbench",
+  "/playbench":  "playbench",
   "/leaderboard": "leaderboard",
-  "/admin": "admin",
+  "/admin":      "admin",
 };
+
+function NavSection({
+  label,
+  items,
+  isDark,
+}: {
+  label: string;
+  items: typeof navItems;
+  isDark: boolean;
+}) {
+  if (!items.length) return null;
+  return (
+    <>
+      <Typography
+        sx={{
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: isDark ? "rgba(255,255,255,0.42)" : "rgba(0,0,0,0.38)",
+          px: 1,
+          mt: 2,
+          mb: 1,
+        }}
+      >
+        {label}
+      </Typography>
+      {items.map((item) => (
+        <NavLink key={item.path} to={item.path} style={{ textDecoration: "none" }}>
+          {({ isActive }) => (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mb: 1,
+                px: 1.5,
+                py: 1,
+                borderRadius: 1,
+                color: isActive
+                  ? "#A855F7"
+                  : isDark
+                  ? "rgba(255,255,255,0.75)"
+                  : "rgba(0,0,0,0.65)",
+                backgroundColor: isActive ? "rgba(124,58,237,0.12)" : "transparent",
+                fontWeight: isActive ? 600 : 500,
+                "&:hover": {
+                  backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 0.5,
+                  backgroundColor: "currentColor",
+                  opacity: 0.7,
+                  flexShrink: 0,
+                }}
+              />
+              <Typography sx={{ fontSize: 13 }}>{item.label}</Typography>
+              {item.badge && (
+                <Box
+                  sx={{
+                    ml: "auto",
+                    px: 1,
+                    py: 0.3,
+                    borderRadius: 99,
+                    background:
+                      item.path === "/swag"
+                        ? "rgba(245,158,11,.15)"
+                        : "linear-gradient(135deg,#7C3AED,#A855F7)",
+                    color: item.path === "/swag" ? "#92400e" : "#fff",
+                    fontSize: 10,
+                    fontWeight: 700,
+                  }}
+                >
+                  {item.badge}
+                </Box>
+              )}
+            </Box>
+          )}
+        </NavLink>
+      ))}
+    </>
+  );
+}
 
 function Sidebar() {
   const { user, hasPermission } = useAuth();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   const visibleItems = navItems.filter((item) => {
     const appId = pathPermissionMap[item.path];
-    if (!appId) return true; // public path for logged-in users
+    if (!appId) return true;
     return hasPermission(appId);
   });
 
   const workspaceItems = visibleItems.filter((item) =>
     ["/dashboard", "/playbench", "/swag", "/apps"].includes(item.path)
   );
-
   const peopleItems = visibleItems.filter((item) =>
     ["/leaderboard", "/profile", "/settings"].includes(item.path)
   );
-
-  const adminItems = visibleItems.filter((item) =>
-    item.path === "/admin"
-  );
-
-  const roadmapItems = visibleItems.filter((item) =>
-    ["/future"].includes(item.path)
-  );
+  const adminItems  = visibleItems.filter((item) => item.path === "/admin");
+  const roadmapItems = visibleItems.filter((item) => ["/future"].includes(item.path));
 
   return (
     <Box
@@ -85,18 +140,15 @@ function Sidebar() {
       sx={{
         width: 230,
         minHeight: "100vh",
-        backgroundColor: "#0F0F1A",
-        borderRight: "1px solid rgba(255,255,255,0.08)",
+        backgroundColor: isDark ? "#0F0F1A" : "#F0F0F8",
+        borderRight: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.10)"}`,
         display: "flex",
         flexDirection: "column",
         p: 2,
         flexShrink: 0,
       }}
     >
-      {/* ====================================================== */}
       {/* LOGO */}
-      {/* ====================================================== */}
-
       <Box sx={{ mb: 3, px: 1 }}>
         <Stack direction="row" alignItems="center" gap={1}>
           <Box
@@ -104,380 +156,60 @@ function Sidebar() {
               width: 34,
               height: 34,
               borderRadius: 2,
-              background:
-                "linear-gradient(135deg,#7C3AED,#A855F7)",
+              background: "linear-gradient(135deg,#7C3AED,#A855F7)",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              boxShadow:
-                "0 0 16px rgba(124,58,237,.5)",
+              boxShadow: "0 0 16px rgba(124,58,237,.4)",
             }}
           >
-            <Typography
-              sx={{
-                color: "#fff",
-                fontWeight: 900,
-                fontSize: 14,
-              }}
-            >
-              MM
-            </Typography>
+            <Typography sx={{ color: "#fff", fontWeight: 900, fontSize: 14 }}>MM</Typography>
           </Box>
-
           <Box>
-            <Typography
-              sx={{
-                fontWeight: 800,
-                fontSize: 14,
-              }}
-            >
+            <Typography sx={{ fontWeight: 800, fontSize: 14, color: "text.primary" }}>
               MotiveMinds
             </Typography>
-
-            <Typography
-              sx={{
-                fontSize: 10,
-                color: "#C084FC",
-                textTransform: "uppercase",
-              }}
-            >
+            <Typography sx={{ fontSize: 10, color: "#A855F7", textTransform: "uppercase" }}>
               Hub
             </Typography>
           </Box>
         </Stack>
       </Box>
 
+      {/* NAV */}
       <Box sx={{ flex: 1, overflowY: "auto" }}>
-                {/* ====================================================== */}
-        {/* WORKSPACE */}
-        {/* ====================================================== */}
-
-        <Typography
-          sx={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.42)",
-            px: 1,
-            mb: 1,
-          }}
-        >
-          Workspace
-        </Typography>
-
-        {workspaceItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            style={{ textDecoration: "none" }}
-          >
-            {({ isActive }) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 1,
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 1,
-                  color: isActive
-                    ? "#A855F7"
-                    : "rgba(255,255,255,0.75)",
-                  backgroundColor: isActive
-                    ? "rgba(124,58,237,0.12)"
-                    : "transparent",
-                  fontWeight: isActive ? 600 : 500,
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: 0.5,
-                    backgroundColor: "currentColor",
-                    opacity: 0.7,
-                  }}
-                />
-
-                <Typography>{item.label}</Typography>
-
-                {item.badge && (
-                  <Box
-                    sx={{
-                      ml: "auto",
-                      px: 1,
-                      py: 0.3,
-                      borderRadius: 99,
-                      background:
-                        item.path === "/swag"
-                          ? "rgba(245,158,11,.15)"
-                          : "linear-gradient(135deg,#7C3AED,#A855F7)",
-                      color:
-                        item.path === "/swag"
-                          ? "#000"
-                          : "#fff",
-                      fontSize: 10,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item.badge}
-                  </Box>
-                )}
-              </Box>
-            )}
-          </NavLink>
-        ))}
-
-        {/* ====================================================== */}
-        {/* PEOPLE */}
-        {/* ====================================================== */}
-
-        <Typography
-          sx={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.42)",
-            px: 1,
-            mt: 2,
-            mb: 1,
-          }}
-        >
-          People
-        </Typography>
-
-        {peopleItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            style={{ textDecoration: "none" }}
-          >
-            {({ isActive }) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  mb: 1,
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 1,
-                  color: isActive
-                    ? "#A855F7"
-                    : "rgba(255,255,255,0.75)",
-                  backgroundColor: isActive
-                    ? "rgba(124,58,237,0.12)"
-                    : "transparent",
-                  fontWeight: isActive ? 600 : 500,
-                  "&:hover": {
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: 0.5,
-                    backgroundColor: "currentColor",
-                    opacity: 0.7,
-                  }}
-                />
-
-                <Typography>{item.label}</Typography>
-              </Box>
-            )}
-          </NavLink>
-        ))}
-                {/* ====================================================== */}
-        {/* ROADMAP */}
-        {/* ====================================================== */}
-
-        {roadmapItems.length > 0 && (
-          <>
-            <Typography
-              sx={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.42)",
-                px: 1,
-                mt: 2,
-                mb: 1,
-              }}
-            >
-              Roadmap
-            </Typography>
-
-            {roadmapItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                style={{ textDecoration: "none" }}
-              >
-                {({ isActive }) => (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 1,
-                      px: 1.5,
-                      py: 1,
-                      borderRadius: 1,
-                      color: isActive
-                        ? "#A855F7"
-                        : "rgba(255,255,255,0.42)",
-                      backgroundColor: isActive
-                        ? "rgba(124,58,237,0.12)"
-                        : "transparent",
-                      fontWeight: isActive ? 600 : 500,
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.05)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: 0.5,
-                        backgroundColor: "currentColor",
-                        opacity: 0.4,
-                      }}
-                    />
-                    <Typography>{item.label}</Typography>
-                  </Box>
-                )}
-              </NavLink>
-            ))}
-          </>
-        )}
-
-        {/* ====================================================== */}
-        {/* ADMIN */}
-        {/* ====================================================== */}
-
-        {adminItems.length > 0 && (
-          <>
-            <Typography
-              sx={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.42)",
-                px: 1,
-                mt: 2,
-                mb: 1,
-              }}
-            >
-              Administration
-            </Typography>
-
-            {adminItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                style={{ textDecoration: "none" }}
-              >
-                {({ isActive }) => (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 1,
-                      px: 1.5,
-                      py: 1,
-                      borderRadius: 1,
-                      color: isActive
-                        ? "#A855F7"
-                        : "rgba(255,255,255,0.75)",
-                      backgroundColor: isActive
-                        ? "rgba(124,58,237,0.12)"
-                        : "transparent",
-                      fontWeight: isActive ? 600 : 500,
-                      "&:hover": {
-                        backgroundColor: "rgba(255,255,255,0.05)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: 0.5,
-                        backgroundColor: "currentColor",
-                        opacity: 0.7,
-                      }}
-                    />
-
-                    <Typography>{item.label}</Typography>
-                  </Box>
-                )}
-              </NavLink>
-            ))}
-          </>
-        )}
+        <NavSection label="Workspace" items={workspaceItems} isDark={isDark} />
+        <NavSection label="People"    items={peopleItems}    isDark={isDark} />
+        <NavSection label="Roadmap"   items={roadmapItems}   isDark={isDark} />
+        <NavSection label="Administration" items={adminItems} isDark={isDark} />
       </Box>
 
-      <Divider
-        sx={{
-          borderColor: "rgba(255,255,255,0.08)",
-        }}
-      />
+      <Divider sx={{ borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.10)" }} />
 
-      {/* ====================================================== */}
-      {/* USER */}
-      {/* ====================================================== */}
-
+      {/* USER CARD */}
       <Box sx={{ mt: 2, px: 1 }}>
         <Stack
           direction="row"
           alignItems="center"
           gap={1}
           sx={{
-            backgroundColor: "rgba(255,255,255,0.04)",
+            backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
             borderRadius: 2,
             p: 1,
           }}
         >
-          <Avatar
-            sx={{
-              bgcolor: "#7C3AED",
-              width: 34,
-              height: 34,
-              fontSize: 14,
-              fontWeight: 700,
-            }}
-          >
+          <Avatar sx={{ bgcolor: "#7C3AED", width: 34, height: 34, fontSize: 14, fontWeight: 700 }}>
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </Avatar>
-
           <Box sx={{ minWidth: 0 }}>
-            <Typography
-              noWrap
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
+            <Typography noWrap sx={{ fontSize: 12, fontWeight: 600, color: "text.primary" }}>
               {user?.name || "User"}
             </Typography>
-
             <Typography
               noWrap
               sx={{
                 fontSize: 10,
-                color: "rgba(255,255,255,0.6)",
+                color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.50)",
                 textTransform: "capitalize",
               }}
             >
