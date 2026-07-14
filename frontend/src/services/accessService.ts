@@ -91,8 +91,8 @@ const DEFAULT_ROLE_PERMISSIONS: RolePermissionResponse[] = [
 const INITIAL_USERS: UserResponse[] = [
   {
     id: "EMP001",
-    display_name: "John Smith",
-    email: "john.smith@motiveminds.com",
+    display_name: "Jane Smith",
+    email: "jane.smith@motiveminds.com",
     role_id: "employee",
     department: "Engineering",
     title: "Software Engineer",
@@ -100,8 +100,8 @@ const INITIAL_USERS: UserResponse[] = [
   },
   {
     id: "EMP002",
-    display_name: "Sarah Wilson",
-    email: "sarah.wilson@motiveminds.com",
+    display_name: "Marcus Lee",
+    email: "marcus.lee@motiveminds.com",
     role_id: "hr",
     department: "Human Resources",
     title: "HR Director",
@@ -109,8 +109,8 @@ const INITIAL_USERS: UserResponse[] = [
   },
   {
     id: "EMP003",
-    display_name: "Rahul Patel",
-    email: "rahul.patel@motiveminds.com",
+    display_name: "Priya Nair",
+    email: "priya.nair@motiveminds.com",
     role_id: "finance",
     department: "Finance",
     title: "Finance Controller",
@@ -118,8 +118,8 @@ const INITIAL_USERS: UserResponse[] = [
   },
   {
     id: "EMP004",
-    display_name: "David Lee",
-    email: "david.lee@motiveminds.com",
+    display_name: "David Chen",
+    email: "david.chen@motiveminds.com",
     role_id: "employee",
     department: "Engineering",
     title: "Junior Developer",
@@ -157,17 +157,15 @@ const ROLE_PERM_KEY = "mm_role_permissions";
 const USER_OVERRIDE_KEY = "mm_user_overrides";
 const USER_KEY = "mm_mock_users";
 const PERM_VERSION_KEY = "mm_perm_version";
-const PERM_VERSION = "3"; // bump when DEFAULT_ROLE_PERMISSIONS changes
+const PERM_VERSION = "4"; // bump when DEFAULT_ROLE_PERMISSIONS or INITIAL_USERS changes
 
-// Initialize localStorage; reseed role permissions whenever PERM_VERSION changes
+// Initialize localStorage; reseed all data whenever PERM_VERSION changes
 function initializeStorage() {
   if (localStorage.getItem(PERM_VERSION_KEY) !== PERM_VERSION) {
     localStorage.setItem(ROLE_PERM_KEY, JSON.stringify(DEFAULT_ROLE_PERMISSIONS));
     localStorage.setItem(USER_OVERRIDE_KEY, JSON.stringify(INITIAL_USER_OVERRIDES));
-    localStorage.setItem(PERM_VERSION_KEY, PERM_VERSION);
-  }
-  if (!localStorage.getItem(USER_KEY)) {
     localStorage.setItem(USER_KEY, JSON.stringify(INITIAL_USERS));
+    localStorage.setItem(PERM_VERSION_KEY, PERM_VERSION);
   }
 }
 
