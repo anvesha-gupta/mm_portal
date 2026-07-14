@@ -16,7 +16,7 @@ export interface AuthContextType {
 
   loading: boolean;
 
-  login: (role: string) => Promise<void>;
+  login: (role?: string) => Promise<void>;
 
   logout: () => Promise<void>;
 

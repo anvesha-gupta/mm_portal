@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from auth.azure_auth import validate_azure_id_token
 from core.security import create_access_token, decode_access_token
 
 
@@ -18,13 +19,16 @@ _DB_ROLE_MAP = {
     "admin":    "it_admin",
 }
 
+# Maps DB role_id → frontend role key
+_FRONTEND_ROLE_MAP = {v: k for k, v in _DB_ROLE_MAP.items()}
+
 
 class AuthService:
     def __init__(self, db: Session):
         self.db = db
 
     # =====================================================
-    # DEMO LOGIN
+    # DEMO LOGIN (local env only)
     # =====================================================
 
     def login(self, role: str) -> dict[str, Any]:
@@ -80,6 +84,94 @@ class AuthService:
                 "title":        display_name,
                 "role_id":      role,
                 "role_label":   display_name,
+                "is_active":    True,
+                "last_login_at": None,
+            },
+        }
+
+    # =====================================================
+    # SSO LOGIN (production env)
+    # =====================================================
+
+    def login_with_sso(self, azure_token: str) -> dict[str, Any]:
+
+        try:
+            claims = validate_azure_id_token(azure_token)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid Azure token: {exc}",
+            )
+
+        azure_oid    = claims.get("oid")
+        email        = (
+            claims.get("preferred_username")
+            or claims.get("email")
+            or claims.get("upn")
+        )
+        display_name = claims.get("name") or email
+
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Azure token is missing an email claim.",
+            )
+
+        # Look up user by azure_oid first, then fall back to email
+        row = None
+        if azure_oid:
+            row = self.db.execute(
+                text(
+                    "SELECT id, email, display_name, role_id "
+                    "FROM mm_portal.users "
+                    "WHERE azure_oid = :oid AND is_active = true "
+                    "LIMIT 1"
+                ),
+                {"oid": azure_oid},
+            ).mappings().first()
+
+        if not row:
+            row = self.db.execute(
+                text(
+                    "SELECT id, email, display_name, role_id "
+                    "FROM mm_portal.users "
+                    "WHERE email = :email AND is_active = true "
+                    "LIMIT 1"
+                ),
+                {"email": email},
+            ).mappings().first()
+
+        if not row:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"No active user found for '{email}'. "
+                       "Contact your IT administrator to provision access.",
+            )
+
+        user_id      = str(row["id"])
+        db_role      = row["role_id"]
+        frontend_role = _FRONTEND_ROLE_MAP.get(db_role, db_role)
+
+        token = create_access_token(
+            {
+                "sub":          user_id,
+                "role":         frontend_role,
+                "email":        row["email"],
+                "display_name": row["display_name"],
+            }
+        )
+
+        return {
+            "access_token": token,
+            "token_type":   "bearer",
+            "user": {
+                "id":           user_id,
+                "email":        row["email"],
+                "display_name": row["display_name"],
+                "department":   frontend_role.upper(),
+                "title":        row["display_name"],
+                "role_id":      frontend_role,
+                "role_label":   row["display_name"],
                 "is_active":    True,
                 "last_login_at": None,
             },

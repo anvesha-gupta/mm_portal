@@ -103,9 +103,11 @@ export function AuthProvider({ children }: Props) {
 
         if (redirectResponse?.idToken) {
           const pendingRole = takePendingLoginRole();
+          const isLocal = import.meta.env.VITE_APP_ENV === "local";
 
-          if (pendingRole) {
-            await completeBackendLogin(pendingRole, redirectResponse.idToken);
+          // Local: role is required. Production: skip role, backend uses azure_token.
+          if (!isLocal || pendingRole) {
+            await completeBackendLogin(pendingRole ?? "", redirectResponse.idToken);
             setLoading(false);
             return;
           }
@@ -159,7 +161,7 @@ export function AuthProvider({ children }: Props) {
     initialize();
   }, []);
 
-  async function login(role: string) {
+  async function login(role?: string) {
     if (loginInProgress.current) {
       return;
     }
@@ -167,9 +169,9 @@ export function AuthProvider({ children }: Props) {
     loginInProgress.current = true;
 
     try {
-      // This navigates the browser away to Microsoft's login page.
+      // Navigates the browser away to Microsoft's login page.
       // Nothing after this line runs until the app reloads on return.
-      await loginWithMicrosoftRedirect(role);
+      await loginWithMicrosoftRedirect(role ?? "");
     } catch (err) {
       loginInProgress.current = false;
       console.error(err);

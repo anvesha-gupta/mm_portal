@@ -46,6 +46,8 @@ function MicrosoftIcon() {
   );
 }
 
+const IS_LOCAL = import.meta.env.VITE_APP_ENV === "local";
+
 export default function LoginPage() {
   const { login, loading: authLoading, user } = useAuth();
   const navigate = useNavigate();
@@ -70,7 +72,7 @@ export default function LoginPage() {
   const handleMicrosoftLogin = async () => {
     setError("");
     try {
-      await login(role);
+      await login(IS_LOCAL ? role : undefined);
     } catch (err: any) {
       setError(err?.message || JSON.stringify(err, null, 2) || "Unable to sign in.");
     }
@@ -189,7 +191,9 @@ export default function LoginPage() {
             align="center"
             sx={{ color: "rgba(255,255,255,0.5)", fontSize: 13, mb: "24px" }}
           >
-            Select your portal role to continue
+            {IS_LOCAL
+              ? "Select your portal role to continue"
+              : "Sign in with your Microsoft account"}
           </Typography>
 
           {/* Error */}
@@ -209,63 +213,65 @@ export default function LoginPage() {
             </Alert>
           )}
 
-          {/* Role selector */}
-          <FormControl fullWidth sx={{ mb: "20px" }}>
-            <InputLabel
-              sx={{
-                color: "rgba(255,255,255,0.45)",
-                "&.Mui-focused": { color: "#A855F7" },
-              }}
-            >
-              Portal Role
-            </InputLabel>
-            <Select
-              value={role}
-              label="Portal Role"
-              onChange={(e) => setRole(e.target.value)}
-              sx={{
-                color: "white",
-                borderRadius: "10px",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(255,255,255,0.11)",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(124,58,237,0.55)",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#7C3AED",
-                  borderWidth: "1.5px",
-                },
-                "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.45)" },
-              }}
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    bgcolor: "#0F0F1C",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "10px",
-                    color: "white",
-                    mt: 0.5,
-                    "& .MuiMenuItem-root": {
-                      fontSize: 14,
-                      py: 1.25,
-                    },
-                    "& .MuiMenuItem-root:hover": {
-                      bgcolor: "rgba(124,58,237,0.14)",
-                    },
-                    "& .MuiMenuItem-root.Mui-selected": {
-                      bgcolor: "rgba(124,58,237,0.22)",
+          {/* Role selector — local dev only */}
+          {IS_LOCAL && (
+            <FormControl fullWidth sx={{ mb: "20px" }}>
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.45)",
+                  "&.Mui-focused": { color: "#A855F7" },
+                }}
+              >
+                Portal Role
+              </InputLabel>
+              <Select
+                value={role}
+                label="Portal Role"
+                onChange={(e) => setRole(e.target.value)}
+                sx={{
+                  color: "white",
+                  borderRadius: "10px",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.11)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(124,58,237,0.55)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#7C3AED",
+                    borderWidth: "1.5px",
+                  },
+                  "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.45)" },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      bgcolor: "#0F0F1C",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "10px",
+                      color: "white",
+                      mt: 0.5,
+                      "& .MuiMenuItem-root": {
+                        fontSize: 14,
+                        py: 1.25,
+                      },
+                      "& .MuiMenuItem-root:hover": {
+                        bgcolor: "rgba(124,58,237,0.14)",
+                      },
+                      "& .MuiMenuItem-root.Mui-selected": {
+                        bgcolor: "rgba(124,58,237,0.22)",
+                      },
                     },
                   },
-                },
-              }}
-            >
-              <MenuItem value="employee">Standard Employee</MenuItem>
-              <MenuItem value="finance">Finance</MenuItem>
-              <MenuItem value="hr">Human Resources (HR)</MenuItem>
-              <MenuItem value="admin">IT Administrator</MenuItem>
-            </Select>
-          </FormControl>
+                }}
+              >
+                <MenuItem value="employee">Standard Employee</MenuItem>
+                <MenuItem value="finance">Finance</MenuItem>
+                <MenuItem value="hr">Human Resources (HR)</MenuItem>
+                <MenuItem value="admin">IT Administrator</MenuItem>
+              </Select>
+            </FormControl>
+          )}
 
           {/* Sign-in button */}
           <Button

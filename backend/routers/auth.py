@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -36,8 +36,22 @@ def login(
 ) -> LoginResponse:
 
     service = AuthService(db)
+    app_env = os.getenv("APP_ENV", "local").lower()
 
-    result = service.login(role=payload.role)
+    if app_env == "local":
+        if not payload.role:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Role is required in local mode.",
+            )
+        result = service.login(role=payload.role)
+    else:
+        if not payload.azure_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Azure token is required.",
+            )
+        result = service.login_with_sso(azure_token=payload.azure_token)
 
     return LoginResponse(**result)
 
