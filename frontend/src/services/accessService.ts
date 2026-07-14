@@ -193,6 +193,16 @@ export const accessService = {
   },
 
   /**
+   * GET /admin/users
+   * Retrieves all users.
+   */
+  async getAllUsers(): Promise<UserResponse[]> {
+    initializeStorage();
+    const data = localStorage.getItem(USER_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  /**
    * GET /admin/users/{id} (mapped here to search by Employee ID)
    * Fetch a specific employee by ID.
    */

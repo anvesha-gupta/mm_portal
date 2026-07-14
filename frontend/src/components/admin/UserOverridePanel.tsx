@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
-import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 
 import {
   accessService,
@@ -24,7 +25,8 @@ import useAuth from "../../auth/useAuth";
 export default function UserOverridePanel() {
   const { user: currentUser, refreshPermissions } = useAuth();
 
-  const [employeeId, setEmployeeId] = useState("");
+  const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [employee, setEmployee] = useState<UserResponse | null>(null);
   
   // Custom states to manage overrides
@@ -36,19 +38,22 @@ export default function UserOverridePanel() {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
 
-  async function searchEmployee() {
-    if (!employeeId.trim()) return;
+  useEffect(() => {
+    accessService.getAllUsers().then(setAllUsers).catch(console.error);
+  }, []);
+
+  async function loadEmployee(userId: string) {
+    if (!userId) {
+      setEmployee(null);
+      setTempOverrides({});
+      setDirty(false);
+      return;
+    }
 
     try {
-      const found = await accessService.getUserByEmployeeId(employeeId);
-      if (!found) {
-        setToastMsg("Employee not found.");
-        setToastOpen(true);
-        setEmployee(null);
-        return;
-      }
+      const found = allUsers.find((u) => u.id === userId) ?? null;
+      if (!found) return;
 
-      // Load all role permissions and overrides for this user
       const [allRp, userOvs] = await Promise.all([
         accessService.getRolePermissions(),
         accessService.getUserOverrides(found.id),
@@ -58,7 +63,6 @@ export default function UserOverridePanel() {
       setRolePermissions(allRp);
       setInitialOverrides(userOvs);
 
-      // Construct a dictionary of initial overrides: appId -> type
       const dict: Record<string, "grant" | "revoke" | null> = {};
       ALL_APPS.forEach((app) => {
         const foundOv = userOvs.find((o) => o.app_id === app.id);
@@ -244,45 +248,56 @@ export default function UserOverridePanel() {
         Grant or revoke applications for a specific employee without changing their role.
       </Typography>
 
-      <Stack
-        direction="row"
-        spacing={2}
-        mb={3}
-      >
-        <TextField
-          fullWidth
-          label="Employee ID (e.g. EMP001)"
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") searchEmployee();
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": { borderColor: "rgba(255,255,255,0.12)" },
-              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.2)" },
-              "&.Mui-focused fieldset": { borderColor: "#A855F7" },
+      <TextField
+        select
+        fullWidth
+        label="Select Employee"
+        value={selectedUserId}
+        onChange={(e) => {
+          setSelectedUserId(e.target.value);
+          loadEmployee(e.target.value);
+        }}
+        sx={{
+          mb: 3,
+          "& .MuiOutlinedInput-root": {
+            "& fieldset": { borderColor: "rgba(255,255,255,0.12)" },
+            "&:hover fieldset": { borderColor: "rgba(255,255,255,0.2)" },
+            "&.Mui-focused fieldset": { borderColor: "#A855F7" },
+          },
+          "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)" },
+          "& .MuiInputLabel-root.Mui-focused": { color: "#A855F7" },
+          "& .MuiOutlinedInput-input": { color: "#fff" },
+          "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.5)" },
+        }}
+        SelectProps={{
+          MenuProps: {
+            PaperProps: {
+              sx: {
+                bgcolor: "#1E1E38",
+                border: "1px solid rgba(255,255,255,0.1)",
+                "& .MuiMenuItem-root": {
+                  color: "#fff",
+                  "&:hover": { bgcolor: "rgba(124,58,237,0.15)" },
+                  "&.Mui-selected": { bgcolor: "rgba(124,58,237,0.25)" },
+                  "&.Mui-selected:hover": { bgcolor: "rgba(124,58,237,0.3)" },
+                },
+              },
             },
-            "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)" },
-            "& .MuiInputLabel-root.Mui-focused": { color: "#A855F7" },
-            "& .MuiOutlinedInput-input": { color: "#fff" },
-          }}
-        />
-
-        <Button
-          variant="contained"
-          onClick={searchEmployee}
-          sx={{
-            background: "linear-gradient(135deg, #7C3AED, #A855F7)",
-            color: "#fff",
-            textTransform: "none",
-            fontWeight: 600,
-            px: 4,
-          }}
-        >
-          Search
-        </Button>
-      </Stack>
+          },
+        }}
+      >
+        <MenuItem value="">
+          <em style={{ color: "rgba(255,255,255,0.4)" }}>-- Select an employee --</em>
+        </MenuItem>
+        {allUsers.map((u) => (
+          <MenuItem key={u.id} value={u.id}>
+            {u.display_name} &nbsp;
+            <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.85em" }}>
+              ({u.id} · {ALL_ROLES.find((r) => r.id === u.role_id)?.label ?? u.role_id})
+            </span>
+          </MenuItem>
+        ))}
+      </TextField>
 
       <Divider sx={{ mb: 3, borderColor: "rgba(255,255,255,0.08)" }} />
 
