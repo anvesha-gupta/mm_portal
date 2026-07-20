@@ -17,6 +17,7 @@ import ExploreIcon from "@mui/icons-material/Explore";
 import { SvgIconComponent } from "@mui/icons-material";
 
 import useAuth from "../auth/useAuth";
+import { usePoints } from "../context/PointsContext";
 
 const navItems: { label: string; path: string; badge?: string; Icon: SvgIconComponent }[] = [
   { label: "Launchpad",         path: "/dashboard",  Icon: RocketLaunchIcon },
@@ -117,6 +118,7 @@ function NavSection({
 
 function Sidebar() {
   const { user, hasPermission } = useAuth();
+  const { balance } = usePoints();
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -202,7 +204,7 @@ function Sidebar() {
           <Avatar sx={{ bgcolor: "#7C3AED", width: 34, height: 34, fontSize: 14, fontWeight: 700 }}>
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </Avatar>
-          <Box sx={{ minWidth: 0 }}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography noWrap sx={{ fontSize: 12, fontWeight: 600, color: "text.primary" }}>
               {user?.name || "User"}
             </Typography>
@@ -217,6 +219,16 @@ function Sidebar() {
               {user?.role}
             </Typography>
           </Box>
+          <Typography
+            sx={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#A855F7",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {balance.toLocaleString()} pts
+          </Typography>
         </Stack>
       </Box>
     </Box>
