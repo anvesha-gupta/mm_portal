@@ -45,7 +45,7 @@ function Header() {
   const { user, logout } = useAuth();
   const { balance } = usePoints();
   const navigate = useNavigate();
-  const { mode, toggleColorMode } = useColorMode();
+  const { toggleColorMode } = useColorMode();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
@@ -123,7 +123,15 @@ function Header() {
               </Typography>
             </DialogTitle>
             <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-            <DialogContent sx={{ px: 3, py: 2 }}>
+            <DialogContent sx={{
+              px: 3, py: 2,
+              scrollbarWidth: 'thin',
+              scrollbarColor: `rgba(168,85,247,0.5) ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'}`,
+              '&::-webkit-scrollbar': { width: 6 },
+              '&::-webkit-scrollbar-track': { background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)', borderRadius: 99 },
+              '&::-webkit-scrollbar-thumb': { background: 'rgba(168,85,247,0.5)', borderRadius: 99 },
+              '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(168,85,247,0.8)' },
+            }}>
               {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress size={28} sx={{ color: '#A855F7' }} />
