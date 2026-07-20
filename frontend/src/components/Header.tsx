@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import { useColorMode } from '../context/ColorModeContext';
+import { usePoints } from '../context/PointsContext';
 
 function SunIcon() {
   return (
@@ -27,6 +28,7 @@ function MoonIcon() {
 
 function Header() {
   const { user, logout } = useAuth();
+  const { balance } = usePoints();
   const navigate = useNavigate();
   const { mode, toggleColorMode } = useColorMode();
   const theme = useTheme();
@@ -57,6 +59,15 @@ function Header() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{
+            display: 'inline-flex', alignItems: 'center', gap: 0.75,
+            px: 1.5, py: 0.6, borderRadius: 99,
+            backgroundColor: isDark ? 'rgba(168,85,247,0.12)' : 'rgba(168,85,247,0.10)',
+            border: '1px solid rgba(168,85,247,0.30)',
+            color: '#A855F7', fontWeight: 700, fontSize: 13,
+          }}>
+            ⭐ {balance.toLocaleString()} pts
+          </Box>
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
             {user?.name ?? ''}
           </Typography>
