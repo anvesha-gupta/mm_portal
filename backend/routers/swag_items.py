@@ -1,14 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import Any
 
 from database import get_db
-from dependencies.auth import require_permission
+from dependencies.auth import get_current_user, require_permission
 from models.user import User
 from services import swag_items as svc
 from schemas import swag_items as schema
 
 router = APIRouter(prefix="/api/swag_items", tags=["SwagItems"])
+
+
+@router.get("/catalogue")
+def get_catalogue(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+):
+    rows = db.execute(text("""
+        SELECT
+            i.id,
+            i.name,
+            i.description,
+            i.points_cost,
+            i.stock_quantity,
+            i.image_url,
+            i.sku,
+            LOWER(c.slug) AS category
+        FROM mm_portal.swag_items i
+        JOIN mm_portal.swag_categories c ON c.id = i.category_id
+        WHERE i.is_active = true AND i.sku IS NOT NULL
+        ORDER BY i.sort_order, i.points_cost
+    """)).mappings().all()
+    return [dict(r) for r in rows]
 
 
 @router.get("/", response_model=list[schema.SwagItemResponse])

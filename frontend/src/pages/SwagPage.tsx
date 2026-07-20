@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -7,46 +7,72 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import PageHeader from '../components/PageHeader';
 import SwagCard from '../components/SwagCard';
 import { usePoints } from '../context/PointsContext';
 import api from '../services/api';
 
-const swagItems = [
-  { id: 1, emoji: '👕', name: 'MM Classic Tee', description: 'Premium cotton, unisex, embroidered logo', points: 150, category: 'apparel' },
-  { id: 2, emoji: '🧥', name: 'Company Hoodie', description: 'Fleece hoodie, embroidered MM branding', points: 400, category: 'apparel' },
-  { id: 3, emoji: '☕', name: 'Ceramic Mug', description: '350ml, microwave safe, glossy finish', points: 100, category: 'accessories' },
-  { id: 4, emoji: '💻', name: 'Laptop Sleeve', description: 'Neoprene, fits 15" laptops, MM logo', points: 250, category: 'accessories' },
-  { id: 5, emoji: '📔', name: 'Branded Notebook', description: 'A5, 200 pages, dot grid, hardcover', points: 80, category: 'stationery' },
-  { id: 6, emoji: '📌', name: 'Enamel Pin Set', description: 'Set of 3 collectible MM enamel pins', points: 60, category: 'accessories' },
-  { id: 7, emoji: '🧢', name: 'Snapback Cap', description: 'Structured snapback, embroidered', points: 120, category: 'apparel' },
-  { id: 8, emoji: '🎨', name: 'Sticker Pack', description: '12 high-quality vinyl stickers', points: 30, category: 'stationery' },
-];
+const EMOJI_MAP: Record<string, string> = {
+  'mm classic tee':    '👕',
+  'company hoodie':    '🧥',
+  'ceramic mug':       '☕',
+  'laptop sleeve':     '💻',
+  'branded notebook':  '📔',
+  'enamel pin set':    '📌',
+  'snapback cap':      '🧢',
+  'sticker pack':      '🎨',
+};
+
+interface SwagItem {
+  id: string;
+  name: string;
+  description: string;
+  points_cost: number;
+  stock_quantity: number;
+  category: string;
+  image_url: string | null;
+  emoji: string;
+}
 
 function SwagPage() {
-  const [selectedItem, setSelectedItem] = useState<typeof swagItems[number] | null>(null);
+  const [items, setItems] = useState<SwagItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<SwagItem | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const { balance, setBalance, addOrder } = usePoints();
 
-  const filteredItems = selectedCategory === 'all'
-    ? swagItems
-    : swagItems.filter(item => item.category === selectedCategory);
+  useEffect(() => {
+    api.get('/api/swag_items/catalogue')
+      .then(res => {
+        const mapped = res.data.map((item: Omit<SwagItem, 'emoji'>) => ({
+          ...item,
+          emoji: EMOJI_MAP[item.name.toLowerCase()] ?? '🎁',
+        }));
+        setItems(mapped);
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleOpen = (item: typeof swagItems[number]) => setSelectedItem(item);
+  const filteredItems = selectedCategory === 'all'
+    ? items
+    : items.filter(item => item.category === selectedCategory);
+
+  const handleOpen = (item: SwagItem) => setSelectedItem(item);
   const handleClose = () => setSelectedItem(null);
 
   const handleConfirm = async () => {
-    if (!selectedItem || balance < selectedItem.points) return;
+    if (!selectedItem || balance < selectedItem.points_cost) return;
     handleClose();
     try {
       const res = await api.post('/api/swag_redemptions/redeem', {
         swag_item_name: selectedItem.name,
-        points_cost: selectedItem.points,
+        points_cost: selectedItem.points_cost,
       });
       setBalance(res.data.new_balance);
     } catch {
-      // Backend unavailable — deduct locally so UI stays consistent
-      setBalance(balance - selectedItem.points);
+      setBalance(balance - selectedItem.points_cost);
     }
     addOrder({ name: selectedItem.name, emoji: selectedItem.emoji });
   };
@@ -76,15 +102,21 @@ function SwagPage() {
           Balance: <Box component="span" sx={{ color: '#F59E0B', fontWeight: 700 }}>{balance} pts</Box>
         </Typography>
       </Box>
-      <Grid container spacing={2}>
-        {filteredItems.map((item) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
-            <Box onClick={() => handleOpen(item)} sx={{ cursor: 'pointer' }}>
-              <SwagCard emoji={item.emoji} name={item.name} description={item.description} points={item.points} disabled={balance < item.points} />
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
+          <CircularProgress sx={{ color: '#A855F7' }} />
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+          {filteredItems.map((item) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
+              <Box onClick={() => handleOpen(item)} sx={{ cursor: 'pointer' }}>
+                <SwagCard emoji={item.emoji} name={item.name} description={item.description} points={item.points_cost} disabled={balance < item.points_cost} />
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       <Dialog open={Boolean(selectedItem)} onClose={handleClose} PaperProps={{ sx: { bgcolor: '#0F0F1A', border: '1px solid rgba(255,255,255,0.08)' } }}>
         <DialogTitle sx={{ color: '#fff' }}>{selectedItem ? `Confirm Redemption: ${selectedItem.name}` : ''}</DialogTitle>
@@ -92,12 +124,12 @@ function SwagPage() {
           <Typography sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>{selectedItem?.description}</Typography>
           <Box sx={{ display: 'grid', gap: 1, bgcolor: '#141422', p: 2, borderRadius: 2, border: '1px solid rgba(255,255,255,0.08)' }}>
             <Typography sx={{ color: 'rgba(255,255,255,0.6)' }}>Item cost</Typography>
-            <Typography sx={{ fontWeight: 700 }}>{selectedItem?.points} pts</Typography>
+            <Typography sx={{ fontWeight: 700 }}>{selectedItem?.points_cost} pts</Typography>
             <Typography sx={{ color: 'rgba(255,255,255,0.6)' }}>Your balance</Typography>
             <Typography sx={{ fontWeight: 700 }}>{balance} pts</Typography>
             <Typography sx={{ color: 'rgba(255,255,255,0.6)' }}>Balance after order</Typography>
-            <Typography sx={{ fontWeight: 700, color: balance >= (selectedItem?.points ?? 0) ? '#10B981' : '#EF4444' }}>
-              {balance - (selectedItem?.points ?? 0)} pts
+            <Typography sx={{ fontWeight: 700, color: balance >= (selectedItem?.points_cost ?? 0) ? '#10B981' : '#EF4444' }}>
+              {balance - (selectedItem?.points_cost ?? 0)} pts
             </Typography>
           </Box>
         </DialogContent>
@@ -105,7 +137,7 @@ function SwagPage() {
           <Button variant="outlined" onClick={handleClose} sx={{ color: 'rgba(255,255,255,0.75)', borderColor: 'rgba(255,255,255,0.15)', textTransform: 'none' }}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleConfirm} disabled={balance < (selectedItem?.points ?? 0)} sx={{ textTransform: 'none', background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' }}>
+          <Button variant="contained" onClick={handleConfirm} disabled={balance < (selectedItem?.points_cost ?? 0)} sx={{ textTransform: 'none', background: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)' }}>
             Confirm Order
           </Button>
         </DialogActions>
