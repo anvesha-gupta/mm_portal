@@ -26,7 +26,7 @@ def get_catalogue(
             i.stock_quantity,
             i.image_url,
             i.sku,
-            LOWER(c.slug) AS category
+            LOWER(c.category_code) AS category
         FROM mm_portal.swag_items i
         JOIN mm_portal.swag_categories c ON c.id = i.category_id
         WHERE i.is_active = true AND i.sku IS NOT NULL
