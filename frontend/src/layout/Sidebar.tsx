@@ -5,19 +5,29 @@ import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
 import { useTheme } from "@mui/material/styles";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
+import AppsIcon from "@mui/icons-material/Apps";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import PersonIcon from "@mui/icons-material/Person";
+import SettingsIcon from "@mui/icons-material/Settings";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import ExploreIcon from "@mui/icons-material/Explore";
+import { SvgIconComponent } from "@mui/icons-material";
 
 import useAuth from "../auth/useAuth";
 
-const navItems = [
-  { label: "Launchpad",         path: "/dashboard" },
-  { label: "AI Playbench",      path: "/playbench", badge: "New" },
-  { label: "Swag Store",        path: "/swag",      badge: "750" },
-  { label: "Apps",              path: "/apps" },
-  { label: "Track Points",      path: "/leaderboard" },
-  { label: "Profile",           path: "/profile" },
-  { label: "Settings",          path: "/settings" },
-  { label: "Access Management", path: "/admin" },
-  { label: "Future Systems",    path: "/future" },
+const navItems: { label: string; path: string; badge?: string; Icon: SvgIconComponent }[] = [
+  { label: "Launchpad",         path: "/dashboard",  Icon: RocketLaunchIcon },
+  { label: "AI Playbench",      path: "/playbench",  Icon: SmartToyIcon,            badge: "New" },
+  { label: "Swag Store",        path: "/swag",       Icon: CardGiftcardIcon,        badge: "750" },
+  { label: "Apps",              path: "/apps",       Icon: AppsIcon },
+  { label: "Track Points",      path: "/leaderboard",Icon: LeaderboardIcon },
+  { label: "Profile",           path: "/profile",    Icon: PersonIcon },
+  { label: "Settings",          path: "/settings",   Icon: SettingsIcon },
+  { label: "Access Management", path: "/admin",      Icon: AdminPanelSettingsIcon },
+  { label: "Future Systems",    path: "/future",     Icon: ExploreIcon },
 ];
 
 const pathPermissionMap: Record<string, string> = {
@@ -76,16 +86,7 @@ function NavSection({
                 },
               }}
             >
-              <Box
-                sx={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: 0.5,
-                  backgroundColor: "currentColor",
-                  opacity: 0.7,
-                  flexShrink: 0,
-                }}
-              />
+              <item.Icon sx={{ fontSize: 18, flexShrink: 0, opacity: 0.85 }} />
               <Typography sx={{ fontSize: 13 }}>{item.label}</Typography>
               {item.badge && (
                 <Box
