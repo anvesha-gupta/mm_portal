@@ -13,6 +13,17 @@ import SwagCard from '../components/SwagCard';
 import { usePoints } from '../context/PointsContext';
 import api from '../services/api';
 
+const ITEM_EMOJI: Record<string, string> = {
+  'mm classic tee':   '👕',
+  'company hoodie':   '🧥',
+  'ceramic mug':      '☕',
+  'laptop sleeve':    '💻',
+  'branded notebook': '📔',
+  'enamel pin set':   '📌',
+  'snapback cap':     '🧢',
+  'sticker pack':     '🎨',
+};
+
 const CATEGORY_EMOJI: Record<string, string> = {
   apparel:     '👕',
   accessories: '🎁',
@@ -42,7 +53,7 @@ function SwagPage() {
       .then(res => {
         const mapped = res.data.map((item: Omit<SwagItem, 'emoji'>) => ({
           ...item,
-          emoji: CATEGORY_EMOJI[item.category.toLowerCase()] ?? '🎁',
+          emoji: ITEM_EMOJI[item.name.toLowerCase()] ?? CATEGORY_EMOJI[item.category.toLowerCase()] ?? '🎁',
         }));
         setItems(mapped);
       })
