@@ -162,20 +162,41 @@ export function AuthProvider({ children }: Props) {
   }, []);
 
   async function login(role?: string) {
-    if (loginInProgress.current) {
-      return;
-    }
-
+    if (loginInProgress.current) return;
     loginInProgress.current = true;
 
     try {
-      // Navigates the browser away to Microsoft's login page.
-      // Nothing after this line runs until the app reloads on return.
-      await loginWithMicrosoftRedirect(role ?? "");
+      const isLocal = import.meta.env.VITE_APP_ENV === "local";
+
+      if (isLocal) {
+        // Local mode: skip MSAL entirely, call backend directly with role
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role: role ?? "employee", azure_token: null }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : JSON.stringify(data));
+
+        sessionStorage.setItem(TOKEN_KEY, data.access_token);
+
+        const [rp, uo] = await Promise.all([
+          accessService.getRolePermissions(),
+          accessService.getUserOverrides(data.user.id),
+        ]);
+        setRolePermissions(rp);
+        setUserOverrides(uo);
+        setUser({ id: data.user.id, name: data.user.display_name, email: data.user.email, role: data.user.role_id });
+      } else {
+        // Production: redirect to Microsoft
+        await loginWithMicrosoftRedirect(role ?? "");
+      }
     } catch (err) {
       loginInProgress.current = false;
       console.error(err);
       throw err;
+    } finally {
+      loginInProgress.current = false;
     }
   }
 
