@@ -123,13 +123,28 @@ export default function LoginPage() {
         <Box sx={{ px: "44px", pt: "40px", pb: "32px" }}>
 
           {/* Branding block */}
-          <Stack alignItems="center" spacing={1.5} sx={{ mb: "36px" }}>
-            <Box
-              component="img"
-              src="/image.png"
-              alt="MotiveMinds"
-              sx={{ width: "100%", maxWidth: 280, display: "block", filter: "invert(1)", mixBlendMode: "screen" }}
-            />
+          <Stack alignItems="center" spacing={0} sx={{ mb: "36px" }}>
+            {/* Logo mark + wordmark row */}
+            <Stack direction="row" alignItems="center" spacing={1.5}>
+              {/* Triangle icon matching the brand mark */}
+              <svg width="36" height="36" viewBox="0 0 40 40">
+                <polygon points="0,8 14,8 0,22"  fill="rgba(255,255,255,0.9)" />
+                <polygon points="0,24 14,24 0,38" fill="rgba(255,255,255,0.6)" />
+                <polygon points="16,0 40,20 16,40" fill="rgba(255,255,255,0.9)" />
+              </svg>
+              <Typography sx={{ color: "#fff", fontWeight: 400, fontSize: 32, letterSpacing: "-0.02em", lineHeight: 1 }}>
+                motiveminds
+              </Typography>
+            </Stack>
+
+            {/* Tagline */}
+            <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mt: "12px" }}>
+              <Box sx={{ width: 36, height: "1px", bgcolor: "rgba(255,255,255,0.15)" }} />
+              <Typography sx={{ color: "#A855F7", fontSize: 10, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase" }}>
+                Intelligence Simplified
+              </Typography>
+              <Box sx={{ width: 36, height: "1px", bgcolor: "rgba(255,255,255,0.15)" }} />
+            </Stack>
           </Stack>
 
           {/* Form heading */}
