@@ -126,64 +126,10 @@ export default function LoginPage() {
           <Stack alignItems="center" spacing={1.5} sx={{ mb: "36px" }}>
             <Box
               component="img"
-              src="/mm_logo.jpg"
+              src="/image.png"
               alt="MotiveMinds"
-              sx={{ width: 80, height: 80, borderRadius: "14px", display: "block" }}
+              sx={{ width: "100%", maxWidth: 280, display: "block", filter: "invert(1)" }}
             />
-
-            <Box sx={{ textAlign: "center" }}>
-              <Typography
-                sx={{
-                  color: "#fff",
-                  fontWeight: 800,
-                  fontSize: 30,
-                  letterSpacing: "-0.03em",
-                  lineHeight: 1.15,
-                }}
-              >
-                Motive
-                <Box
-                  component="span"
-                  sx={{
-                    background: "linear-gradient(135deg, #7C3AED 0%, #C084FC 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  Minds
-                </Box>
-              </Typography>
-
-              <Typography
-                sx={{
-                  color: "rgba(255,255,255,0.38)",
-                  fontSize: 10.5,
-                  fontWeight: 600,
-                  letterSpacing: "0.22em",
-                  textTransform: "uppercase",
-                  mt: "4px",
-                }}
-              >
-                Consulting Pvt Ltd
-              </Typography>
-            </Box>
-
-            {/* Tagline with flanking lines */}
-            <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mt: "4px" }}>
-              <Box sx={{ width: 36, height: "1px", bgcolor: "rgba(255,255,255,0.1)" }} />
-              <Typography
-                sx={{
-                  color: "#A855F7",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Intelligence Simplified
-              </Typography>
-              <Box sx={{ width: 36, height: "1px", bgcolor: "rgba(255,255,255,0.1)" }} />
-            </Stack>
           </Stack>
 
           {/* Form heading */}
