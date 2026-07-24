@@ -128,7 +128,7 @@ export default function LoginPage() {
               component="img"
               src="/image.png"
               alt="MotiveMinds"
-              sx={{ width: "100%", maxWidth: 280, display: "block", filter: "invert(1)" }}
+              sx={{ width: "100%", maxWidth: 280, display: "block", filter: "invert(1)", mixBlendMode: "screen" }}
             />
           </Stack>
 
