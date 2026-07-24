@@ -135,7 +135,7 @@ class AuthService:
                 text(
                     "SELECT id, email, display_name, role_id "
                     "FROM mm_portal.users "
-                    "WHERE email = :email AND is_active = true "
+                    "WHERE LOWER(email) = LOWER(:email) AND is_active = true "
                     "LIMIT 1"
                 ),
                 {"email": email},

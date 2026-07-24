@@ -126,15 +126,16 @@ export default function LoginPage() {
           <Stack alignItems="center" spacing={0} sx={{ mb: "36px" }}>
             {/* Logo mark + wordmark row */}
             <Stack direction="row" alignItems="center" spacing={1.5}>
-              {/* Triangle icon matching the brand mark */}
-              <svg width="38" height="36" viewBox="0 0 42 36">
-                {/* Left column — 2 smaller, dimmer triangles */}
-                <polygon points="0,3  0,15 11,9"  fill="rgba(255,255,255,0.55)" />
-                <polygon points="0,19 0,31 11,25" fill="rgba(255,255,255,0.55)" />
-                {/* Right column — 2 larger, full-brightness triangles */}
-                <polygon points="13,1  13,17 28,9"  fill="white" />
-                <polygon points="13,19 13,35 28,27" fill="white" />
-              </svg>
+              <Box
+                component="img"
+                src="/mm_logo.jpg"
+                sx={{
+                  width: 48,
+                  height: 48,
+                  objectFit: "contain",
+                  mixBlendMode: "screen",
+                }}
+              />
               <Typography sx={{ color: "#fff", fontWeight: 400, fontSize: 32, letterSpacing: "-0.02em", lineHeight: 1 }}>
                 motiveminds
               </Typography>
