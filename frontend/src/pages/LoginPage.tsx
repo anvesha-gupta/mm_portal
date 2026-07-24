@@ -127,10 +127,12 @@ export default function LoginPage() {
             {/* Logo mark + wordmark row */}
             <Stack direction="row" alignItems="center" spacing={1.5}>
               {/* Triangle icon matching the brand mark */}
-              <svg width="36" height="36" viewBox="0 0 40 40">
-                <polygon points="0,8 14,8 0,22"  fill="rgba(255,255,255,0.9)" />
-                <polygon points="0,24 14,24 0,38" fill="rgba(255,255,255,0.6)" />
-                <polygon points="16,0 40,20 16,40" fill="rgba(255,255,255,0.9)" />
+              <svg width="36" height="36" viewBox="0 0 44 44">
+                {/* Two small triangles stacked on the left */}
+                <polygon points="0,2 13,11 0,20"  fill="rgba(255,255,255,0.95)" />
+                <polygon points="0,24 13,33 0,42" fill="rgba(255,255,255,0.95)" />
+                {/* One large triangle on the right */}
+                <polygon points="18,0 44,22 18,44" fill="rgba(255,255,255,0.95)" />
               </svg>
               <Typography sx={{ color: "#fff", fontWeight: 400, fontSize: 32, letterSpacing: "-0.02em", lineHeight: 1 }}>
                 motiveminds
